@@ -1,0 +1,54 @@
+# ========================
+# Go Build Artifacts
+# ========================
+/bin/
+/build/
+/out/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# ========================
+# Go Modules
+# ========================
+/vendor/
+
+# ------------------------
+# Dependency / Cache
+# ------------------------
+*.a
+
+# ========================
+# Editor / IDE
+# ========================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains GoLand
+.idea/
+
+# ========================
+# OS / System Files
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# Logs & Temp
+# ========================
+*.log
+*.tmp
+*.temp
+
+# ========================
+# Local Environment
+# ========================
+.env
+.env.local
+.env.*
