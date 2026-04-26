@@ -2,22 +2,27 @@ package main
 
 import (
 	"VELO-backend/internal/config"
+	"VELO-backend/internal/handler"
+	"VELO-backend/internal/repository"
+	"VELO-backend/internal/service"
 	"fmt"
 	"log"
 	"net/http"
 )
 
 func main() {
-	config.ConnectDB()
-
-	http.HandleFunc("/api/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"message": "Server is running"}`)
-	})
-
-	log.Println("server berjalan di port 8080...")
-	err := http.ListenAndServe(":8080", nil)
+	db, err := config.ConnectDB()
 	if err != nil {
-		log.Fatal("gagal terhubung ke server", err)
+		log.Fatal("Aplikasi berhenti: ", err)
 	}
+	defer db.Close()
+
+	productRepo := repository.NewProductRepository(db)
+	productService := service.NewProductService(productRepo)
+	productHandler := handler.NewProductHandler(productService)
+
+	http.HandleFunc("/api/products", productHandler.GetAllProducts)
+
+	fmt.Println("server berjalan di http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
