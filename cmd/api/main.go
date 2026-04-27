@@ -25,6 +25,7 @@ func main() {
 
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)
 	mux.HandleFunc("POST /api/products", productHandler.CreateProduct)
+	mux.HandleFunc("DELETE /api/products/{id}", productHandler.DeleteProduct)
 
 	fmt.Println("server berjalan di http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))

@@ -10,6 +10,7 @@ import (
 type ProductRepository interface {
 	GetAllProducts() ([]entity.Product, error)
 	CreateProduct(req entity.Product) error
+	DeleteProduct(id int) error
 }
 
 type productRepository struct {
@@ -57,6 +58,21 @@ func (r *productRepository) CreateProduct(req entity.Product) error {
 	_, err := r.db.Exec(query, req.Name, req.Stock, req.Category, req.Price, req.Image)
 	if err != nil {
 		return fmt.Errorf("gagal menambahkan produk: %v", err)
+	}
+
+	return nil
+}
+
+func (r *productRepository) DeleteProduct(id int) error {
+	query := "DELETE FROM products WHERE id = $1"
+	result, err := r.db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("gagal hapus product: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("produk dengan ID %d tidak ditemukan", id)
 	}
 
 	return nil

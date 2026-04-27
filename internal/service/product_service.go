@@ -9,6 +9,7 @@ import (
 type ProductService interface {
 	GetAllProducts() ([]entity.Product, error)
 	CreateProduct(req entity.Product) error
+	DeleteProduct(id int) error
 }
 
 type productService struct {
@@ -46,6 +47,15 @@ func (s *productService) CreateProduct(req entity.Product) error {
 	}
 
 	err := s.repo.CreateProduct(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *productService) DeleteProduct(id int) error {
+	err := s.repo.DeleteProduct(id)
 	if err != nil {
 		return err
 	}

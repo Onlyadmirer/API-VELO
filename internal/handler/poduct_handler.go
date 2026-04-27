@@ -5,6 +5,7 @@ import (
 	"VELO-backend/internal/service"
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 type ProductHandler struct {
@@ -55,5 +56,28 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("produk berhasil ditambahkan")
+}
 
+// DELETE
+func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	id := r.PathValue("id")
+
+	parseId, err := strconv.Atoi(id)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": "ID invalid"})
+		return
+	}
+
+	err = h.service.DeleteProduct(parseId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode("produk berhasil dihapus")
 }
