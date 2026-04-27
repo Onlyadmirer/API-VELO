@@ -11,6 +11,7 @@ type ProductRepository interface {
 	GetAllProducts() ([]entity.Product, error)
 	CreateProduct(req entity.Product) error
 	DeleteProduct(id int) error
+	UpdateProduct(id int, req entity.Product) (*entity.Product, error)
 }
 
 type productRepository struct {
@@ -76,4 +77,22 @@ func (r *productRepository) DeleteProduct(id int) error {
 	}
 
 	return nil
+}
+
+func (r *productRepository) UpdateProduct(id int, req entity.Product) (*entity.Product, error) {
+	query := `UPDATE products
+	SET name = $1, stock = $2, category = $3, price = $4, image = $5
+	WHERE id = $6
+	RETURNING id, name, stock, category, price, image`
+
+	var product entity.Product
+	err := r.db.QueryRow(query, req.Name, req.Stock, req.Category, req.Price, req.Image, id).Scan(&product.ID, &product.Name, &product.Stock, &product.Category, &product.Price, &product.Image)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("produk dengan ID %d tidak ada", id)
+		}
+		return nil, fmt.Errorf("gagal update data: %v", err)
+	}
+
+	return &product, err
 }

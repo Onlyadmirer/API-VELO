@@ -10,6 +10,7 @@ type ProductService interface {
 	GetAllProducts() ([]entity.Product, error)
 	CreateProduct(req entity.Product) error
 	DeleteProduct(id int) error
+	UpdateProduct(id int, req entity.Product) (*entity.Product, error)
 }
 
 type productService struct {
@@ -61,4 +62,25 @@ func (s *productService) DeleteProduct(id int) error {
 	}
 
 	return nil
+}
+
+func (s *productService) UpdateProduct(id int, req entity.Product) (*entity.Product, error) {
+	if req.Name == "" {
+		return nil, errors.New("nama produk tidak boleh kosong")
+	}
+
+	if req.Price <= 0 {
+		return nil, errors.New("price harus lebih dari 0")
+	}
+
+	if req.Stock <= 0 {
+		return nil, errors.New("stock harus lebih dari 0")
+	}
+
+	data, err := s.repo.UpdateProduct(id, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
