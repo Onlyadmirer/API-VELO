@@ -21,8 +21,11 @@ func main() {
 	productService := service.NewProductService(productRepo)
 	productHandler := handler.NewProductHandler(productService)
 
-	http.HandleFunc("/api/products", productHandler.GetAllProducts)
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)
+	mux.HandleFunc("POST /api/products", productHandler.CreateProduct)
 
 	fmt.Println("server berjalan di http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }

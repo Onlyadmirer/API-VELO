@@ -9,6 +9,7 @@ import (
 
 type ProductRepository interface {
 	GetAllProducts() ([]entity.Product, error)
+	CreateProduct(req entity.Product) error
 }
 
 type productRepository struct {
@@ -22,7 +23,7 @@ func NewProductRepository(db *sql.DB) ProductRepository {
 }
 
 func (r *productRepository) GetAllProducts() ([]entity.Product, error) {
-	var produccts []entity.Product
+	var products []entity.Product
 
 	query := "SELECT id, name, price, category, stock, image FROM products"
 	rows, err := r.db.Query(query)
@@ -41,12 +42,22 @@ func (r *productRepository) GetAllProducts() ([]entity.Product, error) {
 			continue
 		}
 
-		produccts = append(produccts, p)
+		products = append(products, p)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("terjadi kesalahan saat membaca baris data: %v", err)
 	}
 
-	return produccts, nil
+	return products, nil
+}
+
+func (r *productRepository) CreateProduct(req entity.Product) error {
+	query := "INSERT INTO products (name, stock, category, price, image) VALUES ($1, $2, $3, $4, $5)"
+	_, err := r.db.Exec(query, req.Name, req.Stock, req.Category, req.Price, req.Image)
+	if err != nil {
+		return fmt.Errorf("gagal menambahkan produk: %v", err)
+	}
+
+	return nil
 }
