@@ -22,7 +22,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 	}
 }
 
-// POST (create user)
+// (Register)
 func (s *userService) CreateUser(user entity.RegisterUser) (*entity.User, error) {
 	err := s.repo.FindByEmail(user.Email)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 type UserRepository interface {
 	CreateUser(user entity.RegisterUser) (*entity.User, error)
 	FindByEmail(email string) error
+	GetUserByEmail(email string) (*entity.User, error)
 }
 
 type userRepository struct {
@@ -36,7 +37,18 @@ func (r *userRepository) FindByEmail(email string) error {
 	return fmt.Errorf("email sudah terdaftar")
 }
 
-// POST (create user)
+func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
+	query := `SELECT * FROM users WHERE email = $1`
+	var u entity.User
+	err := r.db.QueryRow(query).Scan(&u.Name, &u.Email, u.Role, u.CreatedAt, u.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("gagal ambil data user")
+	}
+
+	return &u, nil
+}
+
+// (Register)
 func (r *userRepository) CreateUser(user entity.RegisterUser) (*entity.User, error) {
 	query := `INSERT INTO users (name, email, password)
 	VALUES ($1, $2, $3) RETURNING name, role, created_at, updated_at`
