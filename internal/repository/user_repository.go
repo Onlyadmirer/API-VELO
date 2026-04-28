@@ -10,6 +10,7 @@ type UserRepository interface {
 	CreateUser(user entity.RegisterUser) (*entity.User, error)
 	FindByEmail(email string) error
 	GetUserByEmail(email string) (*entity.User, error)
+	// UserLogin(user entity.LoginUser) (*entity.LoginResponse, error)
 }
 
 type userRepository struct {
@@ -38,9 +39,9 @@ func (r *userRepository) FindByEmail(email string) error {
 }
 
 func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
-	query := `SELECT * FROM users WHERE email = $1`
+	query := `SELECT id, password, role FROM users WHERE email = $1`
 	var u entity.User
-	err := r.db.QueryRow(query).Scan(&u.Name, &u.Email, u.Role, u.CreatedAt, u.UpdatedAt)
+	err := r.db.QueryRow(query, email).Scan(&u.ID, &u.Password, &u.Role)
 	if err != nil {
 		return nil, fmt.Errorf("gagal ambil data user")
 	}

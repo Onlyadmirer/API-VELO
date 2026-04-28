@@ -30,7 +30,8 @@ func main() {
 	mux := http.NewServeMux()
 
 	// user
-	mux.HandleFunc("POST /api/users", userHandler.CreateUser)
+	mux.HandleFunc("POST /api/users/register", userHandler.CreateUser)
+	mux.HandleFunc("POST /api/users/login", userHandler.UserLogin)
 
 	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)
