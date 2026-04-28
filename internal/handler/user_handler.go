@@ -17,6 +17,7 @@ func NewUserHandler(service service.UserService) *UserHandler {
 	}
 }
 
+// POST (create user)
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

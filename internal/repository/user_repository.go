@@ -36,6 +36,7 @@ func (r *userRepository) FindByEmail(email string) error {
 	return fmt.Errorf("email sudah terdaftar")
 }
 
+// POST (create user)
 func (r *userRepository) CreateUser(user entity.RegisterUser) (*entity.User, error) {
 	query := `INSERT INTO users (name, email, password)
 	VALUES ($1, $2, $3) RETURNING name, role, created_at, updated_at`
