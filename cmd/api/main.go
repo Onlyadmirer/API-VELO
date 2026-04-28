@@ -17,12 +17,22 @@ func main() {
 	}
 	defer db.Close()
 
+	// user
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
+	// product
 	productRepo := repository.NewProductRepository(db)
 	productService := service.NewProductService(productRepo)
 	productHandler := handler.NewProductHandler(productService)
 
 	mux := http.NewServeMux()
 
+	// user
+	mux.HandleFunc("POST /api/users", userHandler.CreateUser)
+
+	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)
 	mux.HandleFunc("POST /api/products", productHandler.CreateProduct)
 	mux.HandleFunc("DELETE /api/products/{id}", productHandler.DeleteProduct)
