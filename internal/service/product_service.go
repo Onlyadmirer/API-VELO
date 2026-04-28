@@ -23,6 +23,7 @@ func NewProductService(repo repository.ProductRepository) ProductService {
 	}
 }
 
+// GET
 func (s *productService) GetAllProducts() ([]entity.Product, error) {
 
 	products, err := s.repo.GetAllProducts()
@@ -33,6 +34,7 @@ func (s *productService) GetAllProducts() ([]entity.Product, error) {
 	return products, nil
 }
 
+// CREATE
 func (s *productService) CreateProduct(req entity.Product) error {
 
 	if req.Name == "" {
@@ -55,6 +57,7 @@ func (s *productService) CreateProduct(req entity.Product) error {
 	return nil
 }
 
+// DELETE
 func (s *productService) DeleteProduct(id int) error {
 	err := s.repo.DeleteProduct(id)
 	if err != nil {
@@ -64,6 +67,7 @@ func (s *productService) DeleteProduct(id int) error {
 	return nil
 }
 
+// PUT
 func (s *productService) UpdateProduct(id int, req entity.Product) (*entity.Product, error) {
 	if req.Name == "" {
 		return nil, errors.New("nama produk tidak boleh kosong")

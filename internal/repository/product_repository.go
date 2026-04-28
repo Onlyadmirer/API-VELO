@@ -24,6 +24,7 @@ func NewProductRepository(db *sql.DB) ProductRepository {
 	}
 }
 
+// GET
 func (r *productRepository) GetAllProducts() ([]entity.Product, error) {
 	var products []entity.Product
 
@@ -54,6 +55,7 @@ func (r *productRepository) GetAllProducts() ([]entity.Product, error) {
 	return products, nil
 }
 
+// POST
 func (r *productRepository) CreateProduct(req entity.Product) error {
 	query := "INSERT INTO products (name, stock, category, price, image) VALUES ($1, $2, $3, $4, $5)"
 	_, err := r.db.Exec(query, req.Name, req.Stock, req.Category, req.Price, req.Image)
@@ -64,6 +66,7 @@ func (r *productRepository) CreateProduct(req entity.Product) error {
 	return nil
 }
 
+// DELETE
 func (r *productRepository) DeleteProduct(id int) error {
 	query := "DELETE FROM products WHERE id = $1"
 	result, err := r.db.Exec(query, id)
@@ -79,6 +82,7 @@ func (r *productRepository) DeleteProduct(id int) error {
 	return nil
 }
 
+// PUT
 func (r *productRepository) UpdateProduct(id int, req entity.Product) (*entity.Product, error) {
 	query := `UPDATE products
 	SET name = $1, stock = $2, category = $3, price = $4, image = $5
@@ -94,5 +98,5 @@ func (r *productRepository) UpdateProduct(id int, req entity.Product) (*entity.P
 		return nil, fmt.Errorf("gagal update data: %v", err)
 	}
 
-	return &product, err
+	return &product, nil
 }
