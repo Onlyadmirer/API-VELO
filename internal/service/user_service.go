@@ -53,6 +53,7 @@ func (s *userService) CreateUser(user entity.RegisterUser) (*entity.User, error)
 
 }
 
+// Login
 func (s *userService) UserLogin(reqLogin entity.LoginUser) (*entity.LoginResponse, error) {
 
 	dataUser, err := s.repo.GetUserByEmail(reqLogin.Email)

@@ -38,6 +38,7 @@ func (r *userRepository) FindByEmail(email string) error {
 	return fmt.Errorf("email sudah terdaftar")
 }
 
+// accept email and return datas user for jwt auth
 func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 	query := `SELECT id, password, role FROM users WHERE email = $1`
 	var u entity.User
