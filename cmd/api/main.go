@@ -3,6 +3,7 @@ package main
 import (
 	"VELO-backend/internal/config"
 	"VELO-backend/internal/handler"
+	"VELO-backend/internal/middleware"
 	"VELO-backend/internal/repository"
 	"VELO-backend/internal/service"
 	"fmt"
@@ -35,9 +36,9 @@ func main() {
 
 	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)
-	mux.HandleFunc("POST /api/products", productHandler.CreateProduct)
-	mux.HandleFunc("DELETE /api/products/{id}", productHandler.DeleteProduct)
-	mux.HandleFunc("PUT /api/products/{id}", productHandler.UpdateProduct)
+	mux.HandleFunc("POST /api/products", middleware.JWTMiddleware(productHandler.CreateProduct))
+	mux.HandleFunc("DELETE /api/products/{id}", middleware.JWTMiddleware(productHandler.DeleteProduct))
+	mux.HandleFunc("PUT /api/products/{id}", middleware.JWTMiddleware(productHandler.UpdateProduct))
 
 	fmt.Println("server berjalan di http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
