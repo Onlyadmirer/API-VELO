@@ -18,6 +18,7 @@ func NewCartHandler(service service.CartService) *CartHandler {
 	}
 }
 
+// POST (add product item to cart)
 func (h *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	userID := r.Context().Value(middleware.UserIdKey).(int)
@@ -40,6 +41,7 @@ func (h *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "product berhasil ditambahkan ke keranjang"})
 }
 
+// GET (get cart item)
 func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
