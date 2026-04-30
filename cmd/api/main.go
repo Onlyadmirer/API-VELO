@@ -41,6 +41,7 @@ func main() {
 
 	// cart
 	mux.HandleFunc("POST /api/cart", middleware.JWTMiddleware(cartHandler.AddToCart))
+	mux.HandleFunc("GET /api/cart", middleware.JWTMiddleware(cartHandler.GetCart))
 
 	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)

@@ -7,6 +7,7 @@ import (
 
 type CartService interface {
 	AddToCart(userID int, req entity.AddCartRequest) error
+	GetCart(userId int) ([]entity.CartItemResponse, error)
 }
 
 type cartService struct {
@@ -32,4 +33,13 @@ func (s *cartService) AddToCart(userID int, req entity.AddCartRequest) error {
 
 	return nil
 
+}
+
+func (s *cartService) GetCart(userId int) ([]entity.CartItemResponse, error) {
+	cartItem, err := s.repo.GetCart(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return cartItem, nil
 }

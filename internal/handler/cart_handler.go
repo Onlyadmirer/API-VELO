@@ -39,3 +39,19 @@ func (h *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "product berhasil ditambahkan ke keranjang"})
 }
+
+func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userID := r.Context().Value(middleware.UserIdKey).(int)
+
+	cartItem, err := h.service.GetCart(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]any{"message": "berhasil ambil cart items", "data": cartItem})
+}
