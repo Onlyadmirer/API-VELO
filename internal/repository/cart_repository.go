@@ -59,7 +59,7 @@ func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) 
 
 	var cartItem []entity.CartItemResponse
 
-	query := `SELECT ci.id, ci.cart_id, ci.product_id, ci.quantity, p.name, p.price
+	query := `SELECT ci.id, ci.quantity, p.id, p.name, p.price
 	FROM cart_items ci
 	JOIN carts c ON ci.cart_id = c.id
 	JOIN products p ON ci.product_id = p.id
@@ -77,7 +77,7 @@ func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) 
 
 		ci.Product = &entity.Product{}
 
-		if err := rows.Scan(&ci.ID, &ci.ProductID, &ci.Quantity, &ci.Product.ID, &ci.Product.Name, &ci.Product.Price); err != nil {
+		if err := rows.Scan(&ci.ID, &ci.Quantity, &ci.Product.ID, &ci.Product.Name, &ci.Product.Price); err != nil {
 			log.Println("error saat scan baris cart items: ", err)
 			continue
 		}
