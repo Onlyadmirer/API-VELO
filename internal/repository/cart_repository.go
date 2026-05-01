@@ -58,8 +58,9 @@ func (r *cartRepository) UpsertCartItem(cartID int, productID int, quantity int)
 func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) {
 
 	var cartItem []entity.CartItemResponse
+	var totalPrice float64
 
-	query := `SELECT ci.id, ci.quantity, p.id, p.name, p.price
+	query := `SELECT ci.id, ci.cart_id, ci.quantity, p.id, p.name, p.price
 	FROM cart_items ci
 	JOIN carts c ON ci.cart_id = c.id
 	JOIN products p ON ci.product_id = p.id
@@ -77,19 +78,23 @@ func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) 
 
 		ci.Product = &entity.Product{}
 
-		if err := rows.Scan(&ci.ID, &ci.Quantity, &ci.Product.ID, &ci.Product.Name, &ci.Product.Price); err != nil {
+		if err := rows.Scan(&ci.ID, &ci.CartID, &ci.Quantity, &ci.Product.ID, &ci.Product.Name, &ci.Product.Price); err != nil {
 			log.Println("error saat scan baris cart items: ", err)
 			continue
 		}
 
+		totalPrice = float64(ci.Quantity) * float64(ci.Product.Price)
+
 		resp := entity.CartItemResponse{
 			ID:       ci.ID,
+			CartID:   ci.CartID,
 			Quantity: ci.Quantity,
 			Product: entity.ProductResponse{
 				ID:    ci.Product.ID,
 				Name:  ci.Product.Name,
 				Price: ci.Product.Price,
 			},
+			TotalAmount: totalPrice,
 		}
 
 		cartItem = append(cartItem, resp)
