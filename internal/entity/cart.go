@@ -24,9 +24,11 @@ type AddCartRequest struct {
 }
 
 type CartItemResponse struct {
-	ID       int             `json:"id"`
-	Quantity int             `json:"quantity"`
-	Product  ProductResponse `json:"product"`
+	ID          int             `json:"id"`
+	CartID      int             `json:"cart_id"`
+	Quantity    int             `json:"quantity"`
+	Product     ProductResponse `json:"product"`
+	TotalAmount float64         `json:"total_amount"`
 }
 
 type ProductResponse struct {
