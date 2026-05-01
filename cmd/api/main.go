@@ -28,6 +28,11 @@ func main() {
 	cartService := service.NewCartService(cartRepo)
 	cartHandler := handler.NewCartHandler(cartService)
 
+	// order
+	orderRepo := repository.NewOrderRepository(db)
+	orderService := service.NewOrderService(orderRepo, cartRepo)
+	orderHandler := handler.NewOrderHandler(orderService)
+
 	// product
 	productRepo := repository.NewProductRepository(db)
 	productService := service.NewProductService(productRepo)
@@ -42,6 +47,9 @@ func main() {
 	// cart
 	mux.HandleFunc("POST /api/cart", middleware.JWTMiddleware(cartHandler.AddToCart))
 	mux.HandleFunc("GET /api/cart", middleware.JWTMiddleware(cartHandler.GetCart))
+
+	// order
+	mux.HandleFunc("POST /api/checkout", middleware.JWTMiddleware(orderHandler.CheckOut))
 
 	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)
