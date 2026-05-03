@@ -35,7 +35,7 @@ func init() {
 
 	dbUrl := os.Getenv("DATABASE_URL")
 
-	db, err := sql.Open("postgres", dbUrl)
+	db, err = sql.Open("postgres", dbUrl)
 	if err != nil {
 		fmt.Println("gagal tekoneksi dengan database: ", err)
 	}
