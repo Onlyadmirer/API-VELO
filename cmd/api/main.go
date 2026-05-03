@@ -1,11 +1,11 @@
 package main
 
 import (
-	"VELO-backend/internal/config"
-	"VELO-backend/internal/handler"
-	"VELO-backend/internal/middleware"
-	"VELO-backend/internal/repository"
-	"VELO-backend/internal/service"
+	"VELO-backend/pkg/config"
+	"VELO-backend/pkg/handler"
+	"VELO-backend/pkg/middleware"
+	"VELO-backend/pkg/repository"
+	"VELO-backend/pkg/service"
 	"fmt"
 	"log"
 	"net/http"

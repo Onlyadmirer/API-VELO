@@ -1,8 +1,8 @@
 package service
 
 import (
-	"VELO-backend/internal/entity"
-	"VELO-backend/internal/repository"
+	"VELO-backend/pkg/entity"
+	"VELO-backend/pkg/repository"
 )
 
 type CartService interface {

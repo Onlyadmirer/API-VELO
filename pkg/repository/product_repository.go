@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"VELO-backend/internal/entity"
+	"VELO-backend/pkg/entity"
 	"database/sql"
 	"fmt"
 	"log"

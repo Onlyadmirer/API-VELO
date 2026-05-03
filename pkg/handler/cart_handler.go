@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"VELO-backend/internal/entity"
-	"VELO-backend/internal/middleware"
-	"VELO-backend/internal/service"
+	"VELO-backend/pkg/entity"
+	"VELO-backend/pkg/middleware"
+	"VELO-backend/pkg/service"
 	"encoding/json"
 	"net/http"
 )

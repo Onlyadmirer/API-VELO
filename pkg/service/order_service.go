@@ -1,7 +1,7 @@
 package service
 
 import (
-	"VELO-backend/internal/repository"
+	"VELO-backend/pkg/repository"
 	"fmt"
 	"strconv"
 

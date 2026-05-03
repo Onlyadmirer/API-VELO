@@ -1,9 +1,9 @@
 package api
 
 import (
-	"VELO-backend/internal/middleware"
-	"VELO-backend/internal/repository"
-	"VELO-backend/internal/service"
+	"VELO-backend/pkg/middleware"
+	"VELO-backend/pkg/repository"
+	"VELO-backend/pkg/service"
 	"database/sql"
 	"fmt"
 	"log"
@@ -13,7 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/midtrans/midtrans-go"
 
-	"VELO-backend/internal/handler"
+	"VELO-backend/pkg/handler"
 )
 
 var (
