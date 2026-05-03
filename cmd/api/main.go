@@ -9,9 +9,21 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/midtrans/midtrans-go"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println(".env not found")
+	}
+
+	midtrans.ServerKey = os.Getenv("SERVER_KEY")
+	midtrans.Environment = midtrans.Sandbox
+
 	db, err := config.ConnectDB()
 	if err != nil {
 		log.Fatal("Aplikasi berhenti: ", err)
@@ -50,6 +62,7 @@ func main() {
 
 	// order
 	mux.HandleFunc("POST /api/checkout", middleware.JWTMiddleware(orderHandler.CheckOut))
+	mux.HandleFunc("POST /api/webhook/midtrans", (orderHandler.MidtransNotifications))
 
 	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)

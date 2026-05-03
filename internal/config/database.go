@@ -6,15 +6,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 func ConnectDB() (*sql.DB, error) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println(".env not found")
-	}
 
 	dbUrl := os.Getenv("DATABASE_URL")
 
