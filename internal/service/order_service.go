@@ -3,10 +3,15 @@ package service
 import (
 	"VELO-backend/internal/repository"
 	"fmt"
+	"strconv"
+
+	"github.com/midtrans/midtrans-go"
+	"github.com/midtrans/midtrans-go/snap"
 )
 
 type OrderService interface {
-	CreateOrder(userId int) (int, error)
+	CreateOrder(userId int) (int, string, error)
+	UpdateOrderStatus(orderID int, status string) error
 }
 
 type orderService struct {
@@ -21,23 +26,46 @@ func NewOrderService(orderRepo repository.OrderRepository, cartRepo repository.C
 	}
 }
 
-func (s *orderService) CreateOrder(userId int) (int, error) {
+// create order
+func (s *orderService) CreateOrder(userId int) (int, string, error) {
 	cartItems, err := s.cartRepo.GetCart(userId)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
 	if len(cartItems) <= 0 {
-		return 0, fmt.Errorf("keranjang masih kosong")
+		return 0, "", fmt.Errorf("keranjang masih kosong")
 	}
 
 	cartId := cartItems[0].CartID
 
-	orderID, err := s.orderRepo.CreateOrder(userId, cartId, cartItems)
+	orderID, totalPrice, err := s.orderRepo.CreateOrder(userId, cartId, cartItems)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
-	return orderID, nil
+	orderIDStr := strconv.Itoa(orderID)
 
+	resp := &snap.Request{
+		TransactionDetails: midtrans.TransactionDetails{
+			OrderID:  orderIDStr,
+			GrossAmt: int64(totalPrice),
+		},
+	}
+
+	snapResp, errMidtrans := snap.CreateTransaction(resp)
+	if errMidtrans != nil {
+		return 0, "", fmt.Errorf("gagal membuat linkk pembayaran: %v", errMidtrans.GetMessage())
+	}
+
+	return orderID, snapResp.RedirectURL, nil
+
+}
+
+func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
+	err := s.orderRepo.UpdateOrderStatus(orderID, status)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -7,7 +7,8 @@ import (
 )
 
 type OrderRepository interface {
-	CreateOrder(userId int, cartId int, cartItems []entity.CartItemResponse) (int, error)
+	CreateOrder(userId int, cartId int, cartItems []entity.CartItemResponse) (int, float64, error)
+	UpdateOrderStatus(orderID int, status string) error
 }
 
 type orderRepository struct {
@@ -21,10 +22,10 @@ func NewOrderRepository(db *sql.DB) OrderRepository {
 }
 
 // membuat order/checkout
-func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity.CartItemResponse) (orderId int, err error) {
+func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity.CartItemResponse) (orderId int, totalAmount float64, err error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	defer func() {
@@ -48,7 +49,7 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 	query := `INSERT INTO orders (user_id, total_amount, status) VALUES ($1, $2, $3) RETURNING id`
 	err = tx.QueryRow(query, userId, totalPrice, "Unpaid").Scan(&orderId)
 	if err != nil {
-		return 0, fmt.Errorf("gagal insert order: %v", err)
+		return 0, 0, fmt.Errorf("gagal insert order: %v", err)
 	}
 
 	// insert cart items ke order items
@@ -56,7 +57,7 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 		query := `INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)`
 		_, err = tx.Exec(query, orderId, item.Product.ID, item.Quantity, item.Product.Price)
 		if err != nil {
-			return 0, fmt.Errorf("gagal insert order item: %v", err)
+			return 0, 0, fmt.Errorf("gagal insert order item: %v", err)
 		}
 	}
 
@@ -64,9 +65,20 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 	queryDelete := `DELETE FROM cart_items WHERE cart_id = $1`
 	_, err = tx.Exec(queryDelete, cartId)
 	if err != nil {
-		return 0, fmt.Errorf("gagal hapus item di keranjang: %v", err)
+		return 0, 0, fmt.Errorf("gagal hapus item di keranjang: %v", err)
 	}
 
-	return orderId, nil
+	return orderId, totalPrice, nil
 
+}
+
+// update order status
+func (r *orderRepository) UpdateOrderStatus(orderID int, status string) error {
+	query := `UPDATE orders SET status = $1 WHERE id = $2`
+	_, err := r.db.Exec(query, status, orderID)
+	if err != nil {
+		return fmt.Errorf("gagal update status: %v", err)
+	}
+
+	return nil
 }
