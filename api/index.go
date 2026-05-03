@@ -1,11 +1,11 @@
 package api
 
 import (
-	"VELO-backend/internal/config"
 	"VELO-backend/internal/middleware"
 	"VELO-backend/internal/repository"
 	"VELO-backend/internal/service"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -33,11 +33,12 @@ func init() {
 	midtrans.ServerKey = os.Getenv("SERVER_KEY")
 	midtrans.Environment = midtrans.Sandbox
 
-	db, err := config.ConnectDB()
+	dbUrl := os.Getenv("DATABASE_URL")
+
+	db, err := sql.Open("postgres", dbUrl)
 	if err != nil {
-		log.Fatal("Aplikasi berhenti: ", err)
+		fmt.Println("gagal tekoneksi dengan database: ", err)
 	}
-	defer db.Close()
 
 	// user
 	userRepo := repository.NewUserRepository(db)
