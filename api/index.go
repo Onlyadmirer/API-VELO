@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"os"
 
+	_ "github.com/lib/pq"
+
 	"github.com/joho/godotenv"
 	"github.com/midtrans/midtrans-go"
 
