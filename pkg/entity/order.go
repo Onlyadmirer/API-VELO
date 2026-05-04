@@ -1,10 +1,14 @@
 package entity
 
+import "time"
+
 type Order struct {
 	ID          int     `json:"id"`
 	UserID      int     `json:"user_id"`
 	TotalAmount float64 `json:"total_amount"`
 	Status      string  `json:"status"`
+
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type OrderItem struct {
@@ -19,4 +23,27 @@ type MidtransNotifications struct {
 	TransactionStatus string `json:"transaction_status"`
 	OrderID           string `json:"order_id"`
 	FraudStatus       string `json:"fraud_status"`
+}
+
+type OrderHistory struct {
+	Order OrderHistoryResponse `json:"order"`
+}
+
+type OrderHistoryResponse struct {
+	ID int `json:"id"`
+
+	TotalAmount float64 `json:"total_amount"`
+	Status      string  `json:"status"`
+
+	CreatedAt time.Time         `json:"created_at"`
+	OrderItem OrderItemResponse `json:"order_item"`
+}
+
+type OrderItemResponse struct {
+	Quantity int                    `json:"quantity"`
+	Product  ProductHistoryResponse `json:"product"`
+}
+
+type ProductHistoryResponse struct {
+	Name string `json:"name"`
 }
