@@ -67,3 +67,20 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
+
+func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userId := r.Context().Value(middleware.UserIdKey).(int)
+
+	order, err := h.service.GetOrder(userId)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]any{"message": "Suuccess", "data": order})
+
+}

@@ -4,11 +4,13 @@ import (
 	"VELO-backend/pkg/entity"
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 type OrderRepository interface {
 	CreateOrder(userId int, cartId int, cartItems []entity.CartItemResponse) (int, float64, error)
 	UpdateOrderStatus(orderID int, status string) error
+	GetOrder(userId int) ([]entity.OrderHistory, error)
 }
 
 type orderRepository struct {
@@ -81,4 +83,54 @@ func (r *orderRepository) UpdateOrderStatus(orderID int, status string) error {
 	}
 
 	return nil
+}
+
+func (r *orderRepository) GetOrder(userId int) ([]entity.OrderHistory, error) {
+
+	var orderHistory []entity.OrderHistory
+
+	query := `SELECT oi.order_id, oi.quantity, o.total_amount, o.status, o.created_at, p.name
+	FROM order_items oi
+	JOIN orders o ON oi.order_id = o.id
+	JOIN products p ON oi.product_id = p.id
+	WHERE o.user_id = $1`
+	order, err := r.db.Query(query, userId)
+	if err != nil {
+		return nil, fmt.Errorf("gagal query ke database: %v", err)
+	}
+
+	defer order.Close()
+
+	for order.Next() {
+		var ord entity.OrderHistory
+
+		if err := order.Scan(&ord.Order.ID, &ord.Order.OrderItem.Quantity, &ord.Order.TotalAmount, &ord.Order.Status, &ord.Order.CreatedAt, &ord.Order.OrderItem.Product.Name); err != nil {
+			log.Println("error saat scan baris order history: ", err)
+			continue
+		}
+
+		resp := entity.OrderHistory{
+
+			Order: entity.OrderHistoryResponse{
+				ID:          ord.Order.ID,
+				TotalAmount: ord.Order.TotalAmount,
+				Status:      ord.Order.Status,
+				CreatedAt:   ord.Order.CreatedAt,
+				OrderItem: entity.OrderItemResponse{
+					Quantity: ord.Order.OrderItem.Quantity,
+					Product: entity.ProductHistoryResponse{
+						Name: ord.Order.OrderItem.Product.Name,
+					},
+				},
+			},
+		}
+
+		orderHistory = append(orderHistory, resp)
+	}
+
+	if err = order.Err(); err != nil {
+		return nil, fmt.Errorf("terjadi kesalahan saat membaca baris data: %v", err)
+	}
+
+	return orderHistory, nil
 }
