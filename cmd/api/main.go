@@ -63,6 +63,7 @@ func main() {
 	// order
 	mux.HandleFunc("POST /api/checkout", middleware.JWTMiddleware(orderHandler.CheckOut))
 	mux.HandleFunc("POST /api/webhook/midtrans", (orderHandler.MidtransNotifications))
+	mux.HandleFunc("GET /api/orders", middleware.JWTMiddleware(orderHandler.GetOrder))
 
 	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)

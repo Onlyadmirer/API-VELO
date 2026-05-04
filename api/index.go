@@ -77,6 +77,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// order
 	mux.Handle("POST /api/checkout", middleware.JWTMiddleware(http.HandlerFunc(orderHandler.CheckOut)))
 	mux.Handle("POST /api/webhook/midtrans", http.HandlerFunc(orderHandler.MidtransNotifications))
+	mux.Handle("GET /api/orders", middleware.JWTMiddleware(http.HandlerFunc(orderHandler.GetOrder)))
 
 	// product
 	mux.Handle("GET /api/products", http.HandlerFunc(productHandler.GetAllProducts))
