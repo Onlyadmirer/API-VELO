@@ -7,21 +7,15 @@ import (
 
 func RBACMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userRole := r.Context().Value(RoleKey)
+		w.Header().Set("Content-Type", "application/json")
 
-		value, ok := userRole.(string)
-		if !ok {
+		userRole, ok := r.Context().Value(RoleKey).(string)
+		if !ok || userRole != "admin" {
 			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode(map[string]string{"error": "Akses ditolak, khusus admin"})
 			return
 		}
 
-		if value == "admin" {
-			next.ServeHTTP(w, r)
-		} else {
-			w.WriteHeader(http.StatusForbidden)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Akses ditolak, khusus admin"})
-			return
-		}
+		next.ServeHTTP(w, r)
 	}
 }
