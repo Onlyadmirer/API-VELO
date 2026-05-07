@@ -2,6 +2,7 @@ package entity
 
 import "time"
 
+// Product merepresentasikan entitas produk di dalam sistem.
 type Product struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`

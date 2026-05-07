@@ -25,6 +25,7 @@ type MidtransNotifications struct {
 	FraudStatus       string `json:"fraud_status"`
 }
 
+// OrderHistory membungkus balasan riwayat pesanan.
 type OrderHistory struct {
 	Order OrderHistoryResponse `json:"order"`
 }

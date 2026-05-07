@@ -1,5 +1,6 @@
 package entity
 
+// PaginateMeta menyimpan metadata jumlah halaman dan total data.
 type PaginateMeta struct {
 	CurrentPage int `json:"current_page"`
 	TotalPages  int `json:"total_pages"`

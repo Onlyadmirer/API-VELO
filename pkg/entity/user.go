@@ -2,6 +2,7 @@ package entity
 
 import "time"
 
+// User merupakan model basis data utama untuk data pengguna.
 type User struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`

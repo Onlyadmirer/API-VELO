@@ -2,6 +2,7 @@ package entity
 
 import "time"
 
+// Cart merepresentasikan data keranjang belanja milik user.
 type Cart struct {
 	ID        int       `json:"id"`
 	UserID    int       `json:"user_id"`
