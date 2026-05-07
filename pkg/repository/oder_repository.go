@@ -17,13 +17,15 @@ type orderRepository struct {
 	db *sql.DB
 }
 
+// NewOrderRepository menginisialisasi implementasi OrderRepository dengan koneksi SQL DB.
 func NewOrderRepository(db *sql.DB) OrderRepository {
 	return &orderRepository{
 		db: db,
 	}
 }
 
-// membuat order/checkout
+// CreateOrder mengeksekusi transaksi DB: Hitung harga -> Insert 'orders' -> Insert 'order_items' -> Kosongkan keranjang.
+// Semua query dieksekusi di DALAM transaksi, di-rollback secara otomatis pakai 'defer' jika terjadi error/panic.
 func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity.CartItemResponse) (orderId int, totalAmount float64, err error) {
 	tx, err := r.db.Begin()
 	if err != nil {
@@ -74,7 +76,8 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 
 }
 
-// update order status
+// UpdateOrderStatus mengubah status pesanan yang ada di database (contoh: Unpaid -> Paid).
+
 func (r *orderRepository) UpdateOrderStatus(orderID int, status string) error {
 	query := `UPDATE orders SET status = $1 WHERE id = $2`
 	_, err := r.db.Exec(query, status, orderID)
@@ -85,6 +88,7 @@ func (r *orderRepository) UpdateOrderStatus(orderID int, status string) error {
 	return nil
 }
 
+// GetOrder meretrieve riwayat pesanan user menggunakan JOIN antara sql table orders, order_items, dan products.
 func (r *orderRepository) GetOrder(userId int) ([]entity.OrderHistory, error) {
 
 	var orderHistory []entity.OrderHistory

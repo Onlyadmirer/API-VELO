@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// CartRepository mengelola operasi entri data keranjang belanja.
 type CartRepository interface {
 	GetOrCreateCart(userId int) (int, error)
 	UpsertCartItem(cartID int, productID int, quantity int) error
@@ -17,12 +18,14 @@ type cartRepository struct {
 	db *sql.DB
 }
 
+// NewCartRepository menginisialisasi implementasi CartRepository menggunakan koneksi DB.
 func NewCartRepository(db *sql.DB) CartRepository {
 	return &cartRepository{
 		db: db,
 	}
 }
 
+// GetOrCreateCart akan membuat entri keranjang baru jika user belum memiliki keranjang yang aktif.
 func (r *cartRepository) GetOrCreateCart(userId int) (int, error) {
 	query := `SELECT id FROM carts WHERE user_id = $1`
 	var id int
@@ -44,6 +47,7 @@ func (r *cartRepository) GetOrCreateCart(userId int) (int, error) {
 	return id, nil
 }
 
+// UpsertCartItem memperbarui jumlah (quantity) item jika sudah ada, atau menambahkannya bila belum ada.
 func (r *cartRepository) UpsertCartItem(cartID int, productID int, quantity int) error {
 	query := `INSERT INTO cart_items (cart_id, product_id, quantity) VALUES ($1, $2, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET quantity = cart_items.quantity + EXCLUDED.quantity`
 	_, err := r.db.Exec(query, cartID, productID, quantity)
@@ -55,6 +59,7 @@ func (r *cartRepository) UpsertCartItem(cartID int, productID int, quantity int)
 
 }
 
+// GetCart mengambil semua baris data barang di dalam keranjang belanja milik user.
 func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) {
 
 	var cartItem []entity.CartItemResponse

@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// ProductRepository menangani kueri ke database untuk entitas produk.
 type ProductRepository interface {
 	GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error)
 	CreateProduct(req entity.Product) error
@@ -18,6 +19,7 @@ type productRepository struct {
 	db *sql.DB
 }
 
+// NewProductRepository menginisialisasi implementasi ProductRepository.
 func NewProductRepository(db *sql.DB) ProductRepository {
 	return &productRepository{
 		db: db,
@@ -25,6 +27,7 @@ func NewProductRepository(db *sql.DB) ProductRepository {
 }
 
 // GET
+// GetAllProducts menjemput daftar produk berdasar nomor halaman (offset) dan total pembatasan (limit).
 func (r *productRepository) GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error) {
 	var products []entity.Product
 	var totalItems int
@@ -86,6 +89,7 @@ func (r *productRepository) GetAllProducts(page int, limit int) (entity.Paginate
 }
 
 // POST
+// CreateProduct mengeksekusi DML Insert produk baru ke tabel products.
 func (r *productRepository) CreateProduct(req entity.Product) error {
 	query := "INSERT INTO products (name, stock, category, price, image) VALUES ($1, $2, $3, $4, $5)"
 	_, err := r.db.Exec(query, req.Name, req.Stock, req.Category, req.Price, req.Image)
@@ -97,6 +101,7 @@ func (r *productRepository) CreateProduct(req entity.Product) error {
 }
 
 // DELETE
+// DeleteProduct menghapus records dari tabel product berdasar Primary Key yang diterima.
 func (r *productRepository) DeleteProduct(id int) error {
 	query := "DELETE FROM products WHERE id = $1"
 	result, err := r.db.Exec(query, id)
@@ -113,6 +118,7 @@ func (r *productRepository) DeleteProduct(id int) error {
 }
 
 // PUT
+// UpdateProduct memperbarui kolom nama, harga, dan stok dari sebuah entri produk.
 func (r *productRepository) UpdateProduct(id int, req entity.Product) (*entity.Product, error) {
 	query := `UPDATE products
 	SET name = $1, stock = $2, category = $3, price = $4, image = $5
