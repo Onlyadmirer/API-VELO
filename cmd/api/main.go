@@ -67,9 +67,9 @@ func main() {
 
 	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)
-	mux.HandleFunc("POST /api/products", middleware.JWTMiddleware(productHandler.CreateProduct))
-	mux.HandleFunc("DELETE /api/products/{id}", middleware.JWTMiddleware(productHandler.DeleteProduct))
-	mux.HandleFunc("PUT /api/products/{id}", middleware.JWTMiddleware(productHandler.UpdateProduct))
+	mux.HandleFunc("POST /api/products", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.CreateProduct)))
+	mux.HandleFunc("DELETE /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.DeleteProduct)))
+	mux.HandleFunc("PUT /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.UpdateProduct)))
 
 	fmt.Println("server berjalan di http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))

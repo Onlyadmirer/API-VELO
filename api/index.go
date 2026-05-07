@@ -81,9 +81,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	// product
 	mux.Handle("GET /api/products", http.HandlerFunc(productHandler.GetAllProducts))
-	mux.Handle("POST /api/products", middleware.JWTMiddleware(http.HandlerFunc(productHandler.CreateProduct)))
-	mux.Handle("DELETE /api/products/{id}", middleware.JWTMiddleware(http.HandlerFunc(productHandler.DeleteProduct)))
-	mux.Handle("PUT /api/products/{id}", middleware.JWTMiddleware(http.HandlerFunc(productHandler.UpdateProduct)))
+	mux.Handle("POST /api/products", middleware.JWTMiddleware(middleware.RBACMiddleware(http.HandlerFunc(productHandler.CreateProduct))))
+	mux.Handle("DELETE /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(http.HandlerFunc(productHandler.DeleteProduct))))
+	mux.Handle("PUT /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(http.HandlerFunc(productHandler.UpdateProduct))))
 
 	mux.ServeHTTP(w, r)
 }
