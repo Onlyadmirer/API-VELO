@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// UserService mendefinisikan kontrak untuk layanan pengguna (user).
 type UserService interface {
 	CreateUser(user entity.RegisterUser) (*entity.User, error)
 	UserLogin(reqLogin entity.LoginUser) (*entity.LoginResponse, error)
@@ -20,13 +21,14 @@ type userService struct {
 	repo repository.UserRepository
 }
 
+// NewUserService membuat instance UserService baru dengan dependensi UserRepository.
 func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{
 		repo: repo,
 	}
 }
 
-// (Register)
+// CreateUser memproses data pendaftaran, melakukan hashing password, dan menyimpan data pengguna baru ke database.
 func (s *userService) CreateUser(user entity.RegisterUser) (*entity.User, error) {
 	err := s.repo.FindByEmail(user.Email)
 	if err != nil {
@@ -53,7 +55,7 @@ func (s *userService) CreateUser(user entity.RegisterUser) (*entity.User, error)
 
 }
 
-// Login
+// UserLogin memverifikasi kredensial pengguna dan mengembalikan JWT token jika berhasil.
 func (s *userService) UserLogin(reqLogin entity.LoginUser) (*entity.LoginResponse, error) {
 
 	dataUser, err := s.repo.GetUserByEmail(reqLogin.Email)

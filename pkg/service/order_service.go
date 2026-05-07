@@ -10,6 +10,7 @@ import (
 	"github.com/midtrans/midtrans-go/snap"
 )
 
+// OrderService menangani logika transaksi order dan checkout.
 type OrderService interface {
 	CreateOrder(userId int) (int, string, error)
 	UpdateOrderStatus(orderID int, status string) error
@@ -21,6 +22,7 @@ type orderService struct {
 	cartRepo  repository.CartRepository
 }
 
+// NewOrderService membuat instance OrderService.
 func NewOrderService(orderRepo repository.OrderRepository, cartRepo repository.CartRepository) OrderService {
 	return &orderService{
 		orderRepo: orderRepo,
@@ -28,7 +30,7 @@ func NewOrderService(orderRepo repository.OrderRepository, cartRepo repository.C
 	}
 }
 
-// create order
+// CreateOrder menghitung harga, membuat pesanan di basis data, dan memulai proses pembayaran dengan payment gateway.
 func (s *orderService) CreateOrder(userId int) (int, string, error) {
 	cartItems, err := s.cartRepo.GetCart(userId)
 	if err != nil {
@@ -64,6 +66,7 @@ func (s *orderService) CreateOrder(userId int) (int, string, error) {
 
 }
 
+// UpdateOrderStatus mengubah status pesanan (misal dari tertunda jadi selesai).
 func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 	err := s.orderRepo.UpdateOrderStatus(orderID, status)
 	if err != nil {
@@ -72,6 +75,7 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 	return nil
 }
 
+// GetOrder meretrieve riwayat pesanan beserta status pembayarannya.
 func (s *orderService) GetOrder(userId int) ([]entity.OrderHistory, error) {
 	order, err := s.orderRepo.GetOrder(userId)
 	if err != nil {
