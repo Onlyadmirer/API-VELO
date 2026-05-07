@@ -22,7 +22,23 @@ func NewProductHandler(service service.ProductService) *ProductHandler {
 func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	products, err := h.service.GetAllProducts()
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page := 1
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	limit := 10
+	if pageStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	products, err := h.service.GetAllProducts(page, limit)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
@@ -31,8 +47,9 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]any{
-		"message": "Berhasil mengambil data produk",
-		"data":    products,
+		"message":  "Berhasil mengambil data produk",
+		"data":     products.Data,
+		"metadata": products.Metadata,
 	})
 
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type ProductService interface {
-	GetAllProducts() ([]entity.Product, error)
+	GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error)
 	CreateProduct(req entity.Product) error
 	DeleteProduct(id int) error
 	UpdateProduct(id int, req entity.Product) (*entity.Product, error)
@@ -24,11 +24,11 @@ func NewProductService(repo repository.ProductRepository) ProductService {
 }
 
 // GET
-func (s *productService) GetAllProducts() ([]entity.Product, error) {
+func (s *productService) GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error) {
 
-	products, err := s.repo.GetAllProducts()
+	products, err := s.repo.GetAllProducts(page, limit)
 	if err != nil {
-		return nil, err
+		return entity.PaginatedProductResponse{}, err
 	}
 
 	return products, nil

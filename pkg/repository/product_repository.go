@@ -8,7 +8,7 @@ import (
 )
 
 type ProductRepository interface {
-	GetAllProducts() ([]entity.Product, error)
+	GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error)
 	CreateProduct(req entity.Product) error
 	DeleteProduct(id int) error
 	UpdateProduct(id int, req entity.Product) (*entity.Product, error)
@@ -25,13 +25,23 @@ func NewProductRepository(db *sql.DB) ProductRepository {
 }
 
 // GET
-func (r *productRepository) GetAllProducts() ([]entity.Product, error) {
+func (r *productRepository) GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error) {
 	var products []entity.Product
+	var totalItems int
 
-	query := "SELECT id, name, price, category, stock, image FROM products"
-	rows, err := r.db.Query(query)
+	// total product di database
+	countQuery := `SELECT COUNT(id) FROM products`
+	err := r.db.QueryRow(countQuery).Scan(&totalItems)
 	if err != nil {
-		return nil, fmt.Errorf("gagal mengambil data products: %v", err)
+		return entity.PaginatedProductResponse{}, fmt.Errorf("gagal hitung jumlah products")
+	}
+
+	offset := (page - 1) * limit
+
+	query := "SELECT id, name, price, category, stock, image FROM products LIMIT $1 OFFSET $2"
+	rows, err := r.db.Query(query, limit, offset)
+	if err != nil {
+		return entity.PaginatedProductResponse{}, fmt.Errorf("gagal mengambil data products: %v", err)
 	}
 
 	defer rows.Close()
@@ -48,11 +58,31 @@ func (r *productRepository) GetAllProducts() ([]entity.Product, error) {
 		products = append(products, p)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("terjadi kesalahan saat membaca baris data: %v", err)
+	totalPages := totalItems / limit
+	if totalItems%limit > 0 {
+
+		totalPages++
 	}
 
-	return products, nil
+	if products == nil {
+		products = []entity.Product{}
+	}
+
+	if err = rows.Err(); err != nil {
+		return entity.PaginatedProductResponse{}, fmt.Errorf("terjadi kesalahan saat membaca baris data: %v", err)
+	}
+
+	result := entity.PaginatedProductResponse{
+		Data: products,
+		Metadata: entity.PaginateMeta{
+			CurrentPage: page,
+			TotalPages:  totalPages,
+			TotalItems:  totalItems,
+			Limit:       limit,
+		},
+	}
+
+	return result, nil
 }
 
 // POST
