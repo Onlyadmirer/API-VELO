@@ -9,6 +9,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// ConnectDB membuka koneksi ke SQL database (PostgreSQL/MySQL) menggunakan string koneksi dsn.
+// Fungsi ini mengembalikan *sql.DB yang bisa di-inject ke berbagai Repository.
 func ConnectDB() (*sql.DB, error) {
 
 	dbUrl := os.Getenv("DATABASE_URL")
