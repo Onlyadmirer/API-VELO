@@ -18,6 +18,8 @@ const (
 	RoleKey   contextKey = "role"
 )
 
+// JWTMiddleware mencegat request HTTP untuk memeriksa token JWT pada header Authorization.
+// Middleware ini akan memvalidasi algoritma, dekode klaim (userId & role), dan memasukkannya ke dalam Context.
 func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
