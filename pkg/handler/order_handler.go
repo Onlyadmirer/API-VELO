@@ -13,12 +13,14 @@ type OrderHandler struct {
 	service service.OrderService
 }
 
+// NewOrderHandler menginisialisasi instance baru untuk OrderHandler.
 func NewOrderHandler(service service.OrderService) *OrderHandler {
 	return &OrderHandler{
 		service: service,
 	}
 }
 
+// CheckOut menangani proses pemesanan dengan memanggil operasi Service untuk membuat transaksi.
 func (h *OrderHandler) CheckOut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	userID := r.Context().Value(middleware.UserIdKey).(int)
@@ -34,7 +36,8 @@ func (h *OrderHandler) CheckOut(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]any{"message": "berhasil chekout", "order_id": orderID, "redirect_url": RedirectURL})
 }
 
-// midtrans notifications
+// MidtransNotifications menangani webhook/notifikasi dari Midtrans (Gateway Pembayaran).
+// Berfungsi untuk membaca status pembayaran dari Payload Midtrans dan mengubah status pesanan di database.
 func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -68,6 +71,7 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 	w.Write([]byte("ok"))
 }
 
+// GetOrder menangani rute request untuk menampilkan profil dan riwayat order pelanggan.
 func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

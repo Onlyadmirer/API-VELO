@@ -7,10 +7,12 @@ import (
 	"net/http"
 )
 
+// UserHandler menangani permintaan HTTP terkait autentikasi user.
 type UserHandler struct {
 	service service.UserService
 }
 
+// NewUserHandler menginisialisasi instance baru untuk UserHandler.
 func NewUserHandler(service service.UserService) *UserHandler {
 	return &UserHandler{
 		service: service,

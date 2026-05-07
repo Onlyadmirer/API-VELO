@@ -8,10 +8,12 @@ import (
 	"strconv"
 )
 
+// ProductHandler memfasilitasi endpoint HTTP untuk produk.
 type ProductHandler struct {
 	service service.ProductService
 }
 
+// NewProductHandler menginisialisasi instance baru untuk ProductHandler.
 func NewProductHandler(service service.ProductService) *ProductHandler {
 	return &ProductHandler{
 		service: service,
@@ -19,6 +21,7 @@ func NewProductHandler(service service.ProductService) *ProductHandler {
 }
 
 // GET
+// GetAllProducts menangani endpoint yang meminta data semua produk lengkap dengan informasi paginasinya.
 func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -55,6 +58,7 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 }
 
 // POST
+// CreateProduct memfasilitasi pembuatan produk baru di database dari input admin.
 func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -76,6 +80,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 // DELETE
+// DeleteProduct menghapus produk secara permanen dari sistem berdasarkan param ID.
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -100,6 +105,7 @@ func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT
+// UpdateProduct memproses pemutakhiran data detail suatu produk menggunakan data JSON terbaru.
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

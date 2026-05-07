@@ -8,10 +8,12 @@ import (
 	"net/http"
 )
 
+// CartHandler bertanggung jawab melayani rute HTTP keranjang.
 type CartHandler struct {
 	service service.CartService
 }
 
+// NewCartHandler menginisialisasi instance baru untuk CartHandler.
 func NewCartHandler(service service.CartService) *CartHandler {
 	return &CartHandler{
 		service: service,
@@ -19,6 +21,7 @@ func NewCartHandler(service service.CartService) *CartHandler {
 }
 
 // POST (add product item to cart)
+// AddToCart memproses request menambahkan barang ke keranjang.
 func (h *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	userID := r.Context().Value(middleware.UserIdKey).(int)
@@ -42,6 +45,7 @@ func (h *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET (get cart item)
+// GetCart menangani request untuk melihat seluruh item pada keranjang belanja pengguna.
 func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
