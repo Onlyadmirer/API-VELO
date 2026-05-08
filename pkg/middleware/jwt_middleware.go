@@ -43,7 +43,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		})
 
-		if err != nil && !token.Valid {
+		if err != nil || !token.Valid {
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(map[string]string{"message": "Unauthorized: Token invalid atau expired"})
 			return
