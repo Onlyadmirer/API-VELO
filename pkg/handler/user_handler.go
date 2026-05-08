@@ -68,3 +68,20 @@ func (h *UserHandler) UserLogin(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]any{"message": "Login Berhasil"})
 
 }
+
+func (h *UserHandler) LogOut(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	cookie := &http.Cookie{
+		Name:     "jwt_token",
+		Value:    "",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteDefaultMode,
+		Path:     "/",
+	}
+
+	http.SetCookie(w, cookie)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`"message: berhasil log out"`))
+}
