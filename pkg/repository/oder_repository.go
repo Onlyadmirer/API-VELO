@@ -64,6 +64,7 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 			return 0, 0, fmt.Errorf("gagal insert order item: %v", err)
 		}
 
+		// kurangi stock product
 		stock := item.Quantity
 
 		queryKurangiStock := `UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1`
