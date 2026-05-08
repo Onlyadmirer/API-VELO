@@ -62,7 +62,9 @@ func (h *UserHandler) UserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.SetCookie(w, user)
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{"message": "berhasil buat token", "data": user})
+	json.NewEncoder(w).Encode(map[string]any{"message": "Login Berhasil"})
 
 }

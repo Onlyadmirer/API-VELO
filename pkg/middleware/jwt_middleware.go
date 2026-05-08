@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -18,24 +17,22 @@ const (
 	RoleKey   contextKey = "role"
 )
 
-// JWTMiddleware mencegat request HTTP untuk memeriksa token JWT pada header Authorization.
+// JWTMiddleware mencegat request HTTP untuk memeriksa token JWT pada Cookie.
 // Middleware ini akan memvalidasi algoritma, dekode klaim (userId & role), dan memasukkannya ke dalam Context.
 func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"message": "Unauthorized: Token tidak ditemukan"})
+		cookie, err := r.Cookie("jwt_token")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write([]byte(`{error:"Unauthorized token tidak di temukan"}`))
+			}
+
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		if !strings.Contains(authHeader, "Bearer") {
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"message": "Unauthorized: invalid format token"})
-			return
-		}
-
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		tokenString := cookie.Value
 
 		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
