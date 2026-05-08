@@ -55,6 +55,10 @@ func (s *orderService) CreateOrder(userId int) (int, string, error) {
 			OrderID:  orderIDStr,
 			GrossAmt: int64(totalPrice),
 		},
+		Expiry: &snap.ExpiryDetails{
+			Duration: 15,
+			Unit:     "minute",
+		},
 	}
 
 	snapResp, errMidtrans := snap.CreateTransaction(resp)
