@@ -63,6 +63,14 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 		if err != nil {
 			return 0, 0, fmt.Errorf("gagal insert order item: %v", err)
 		}
+
+		stock := item.Quantity
+
+		queryKurangiStock := `UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1`
+		_, err = tx.Exec(queryKurangiStock, stock, item.Product.ID)
+		if err != nil {
+			return 0, 0, fmt.Errorf("gagla kurangi stock product: %v", err)
+		}
 	}
 
 	// delete item yang ada di dalam cart karena sudah di order
@@ -77,7 +85,6 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 }
 
 // UpdateOrderStatus mengubah status pesanan yang ada di database (contoh: Unpaid -> Paid).
-
 func (r *orderRepository) UpdateOrderStatus(orderID int, status string) error {
 	query := `UPDATE orders SET status = $1 WHERE id = $2`
 	_, err := r.db.Exec(query, status, orderID)
