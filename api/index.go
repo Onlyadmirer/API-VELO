@@ -69,6 +69,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// user
 	mux.Handle("POST /api/users/register", http.HandlerFunc(userHandler.CreateUser))
 	mux.Handle("POST /api/users/login", http.HandlerFunc(userHandler.UserLogin))
+	mux.Handle("POST /api/users/logout", http.HandlerFunc(middleware.JWTMiddleware(userHandler.LogOut)))
 
 	// cart
 	mux.Handle("POST /api/cart", middleware.JWTMiddleware(http.HandlerFunc(cartHandler.AddToCart)))
