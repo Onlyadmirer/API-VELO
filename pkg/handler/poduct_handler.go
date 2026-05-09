@@ -3,6 +3,7 @@ package handler
 import (
 	"VELO-backend/pkg/entity"
 	"VELO-backend/pkg/service"
+	"VELO-backend/pkg/utils"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -43,14 +44,11 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 
 	products, err := h.service.GetAllProducts(page, limit)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{
-		"message":  "Berhasil mengambil data produk",
+	utils.ResponseSuccess(w, http.StatusOK, "Berhasil mengambil data produk", map[string]any{
 		"data":     products.Data,
 		"metadata": products.Metadata,
 	})
@@ -64,19 +62,16 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	var newProduct entity.Product
 	if err := json.NewDecoder(r.Body).Decode(&newProduct); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "input salah"})
+		utils.ResponseError(w, http.StatusBadRequest, "Invalid input")
 		return
 	}
 
 	err := h.service.CreateProduct(newProduct)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode("produk berhasil ditambahkan")
+	utils.ResponseSuccess(w, http.StatusOK, "Produk berhasil ditambahkan", nil)
 }
 
 // DELETE
@@ -88,20 +83,17 @@ func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 
 	parseId, err := strconv.Atoi(id)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "ID invalid"})
+		utils.ResponseError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	err = h.service.DeleteProduct(parseId)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode("produk berhasil dihapus")
+	utils.ResponseSuccess(w, http.StatusOK, "Produk berhasil dihapus", nil)
 }
 
 // PUT
@@ -113,26 +105,22 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 
 	parseId, err := strconv.Atoi(id)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "ID invalid"})
+		utils.ResponseError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
 	var product entity.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid input"})
+		utils.ResponseError(w, http.StatusBadRequest, "Invalid input")
 		return
 	}
 
 	data, err := h.service.UpdateProduct(parseId, product)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{"message": "berhasil update product", "data": data})
+	utils.ResponseSuccess(w, http.StatusOK, "berhasil update product", data)
 
 }
