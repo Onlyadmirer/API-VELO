@@ -3,6 +3,7 @@ package handler
 import (
 	"VELO-backend/pkg/entity"
 	"VELO-backend/pkg/service"
+	"VELO-backend/pkg/utils"
 	"encoding/json"
 	"net/http"
 )
@@ -26,20 +27,17 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var regis entity.RegisterUser
 
 	if err := json.NewDecoder(r.Body).Decode(&regis); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid input"})
+		utils.ResponseError(w, http.StatusBadRequest, "Invalid input")
 		return
 	}
 
 	user, err := h.service.CreateUser(regis)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{"message": "berhasil registrasi", "data": user})
+	utils.ResponseSuccess(w, http.StatusOK, "berhasil registrasi", user)
 
 }
 
@@ -50,22 +48,19 @@ func (h *UserHandler) UserLogin(w http.ResponseWriter, r *http.Request) {
 	var login entity.LoginUser
 
 	if err := json.NewDecoder(r.Body).Decode(&login); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	user, err := h.service.UserLogin(login)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		utils.ResponseError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
 	http.SetCookie(w, user)
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{"message": "Login Berhasil"})
+	utils.ResponseSuccess(w, http.StatusOK, "Login berhasil", user)
 
 }
 
