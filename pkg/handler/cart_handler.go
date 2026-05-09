@@ -4,6 +4,7 @@ import (
 	"VELO-backend/pkg/entity"
 	"VELO-backend/pkg/middleware"
 	"VELO-backend/pkg/service"
+	"VELO-backend/pkg/utils"
 	"encoding/json"
 	"net/http"
 )
@@ -28,20 +29,17 @@ func (h *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 
 	var reqCart entity.AddCartRequest
 	if err := json.NewDecoder(r.Body).Decode(&reqCart); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "invalid input"})
+		utils.ResponseError(w, http.StatusBadRequest, "invalid input: "+err.Error())
 		return
 	}
 
 	err := h.service.AddToCart(userID, reqCart)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "product berhasil ditambahkan ke keranjang"})
+	utils.ResponseSuccess(w, http.StatusOK, "product berhasil ditambahkan ke keranjang", nil)
 }
 
 // GET (get cart item)
@@ -53,11 +51,9 @@ func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 
 	cartItem, err := h.service.GetCart(userID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{"message": "berhasil ambil cart items", "data": cartItem})
+	utils.ResponseSuccess(w, http.StatusOK, "berhasil ambil cart items", cartItem)
 }
