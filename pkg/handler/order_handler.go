@@ -4,6 +4,7 @@ import (
 	"VELO-backend/pkg/entity"
 	"VELO-backend/pkg/middleware"
 	"VELO-backend/pkg/service"
+	"VELO-backend/pkg/utils"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -27,13 +28,11 @@ func (h *OrderHandler) CheckOut(w http.ResponseWriter, r *http.Request) {
 
 	orderID, RedirectURL, err := h.service.CreateOrder(userID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{"message": "berhasil chekout", "order_id": orderID, "redirect_url": RedirectURL})
+	utils.ResponseSuccess(w, http.StatusOK, "Berhasil checkout", map[string]any{"order_id": orderID, "redirect_url": RedirectURL})
 }
 
 // MidtransNotifications menangani webhook/notifikasi dari Midtrans (Gateway Pembayaran).
@@ -43,8 +42,7 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 
 	var notifications entity.MidtransNotifications
 	if err := json.NewDecoder(r.Body).Decode(&notifications); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -62,8 +60,7 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 
 	err := h.service.UpdateOrderStatus(orderID, paymentStatus)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -79,12 +76,10 @@ func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 
 	order, err := h.service.GetOrder(userId)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{"message": "Suuccess", "data": order})
+	utils.ResponseSuccess(w, http.StatusOK, "Success", order)
 
 }
