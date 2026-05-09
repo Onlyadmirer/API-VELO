@@ -5,8 +5,11 @@ import (
 	"VELO-backend/pkg/middleware"
 	"VELO-backend/pkg/service"
 	"VELO-backend/pkg/utils"
+	"crypto/sha512"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -48,6 +51,21 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 	var notifications entity.MidtransNotifications
 	if err := json.NewDecoder(r.Body).Decode(&notifications); err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	serverKey := os.Getenv("SERVER_KEY")
+
+	// validasi signature key midtrans
+	rawSignature := notifications.OrderID + notifications.StatusCode + strconv.Itoa(notifications.GrossAmount) + serverKey
+
+	hasher := sha512.New()
+	hasher.Write([]byte(rawSignature))
+	calculatedSignature := hex.EncodeToString(hasher.Sum(nil))
+
+	if calculatedSignature != notifications.SignaturKey {
+
+		utils.ResponseError(w, http.StatusUnauthorized, "invalid signature key")
 		return
 	}
 
