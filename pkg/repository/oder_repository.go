@@ -11,6 +11,8 @@ type OrderRepository interface {
 	CreateOrder(userId int, cartId int, cartItems []entity.CartItemResponse) (int, float64, error)
 	UpdateOrderStatus(orderID int, status string) error
 	GetOrder(userId int) ([]entity.OrderHistory, error)
+	RestoreStock(orderID int) error
+	GetOrderStatus(orderID int) (string, error)
 }
 
 type orderRepository struct {
@@ -101,6 +103,53 @@ func (r *orderRepository) UpdateOrderStatus(orderID int, status string) error {
 	}
 
 	return nil
+}
+
+// cek status order
+func (r *orderRepository) GetOrderStatus(orderID int) (string, error) {
+	query := `SELECT status FROM orders WHERE id = $1`
+
+	var status string
+
+	err := r.db.QueryRow(query, orderID).Scan(&status)
+	if err != nil {
+		return "", fmt.Errorf("gagal ambil status order")
+	}
+
+	return status, nil
+}
+
+// restore stock produk jika pembayaran gagal, cancel, expire, atau terjadi error di midtrans
+func (r *orderRepository) RestoreStock(orderID int) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	query := `UPDATE products p
+	SET stock = p.stock + oi.quantity
+	FROM order_items oi
+	WHERE oi.product_id = p.id
+	AND oi.order_id = $1`
+
+	_, err = tx.Exec(query, orderID)
+	if err != nil {
+		return fmt.Errorf("gagal restore stock product: %v", err)
+	}
+
+	return nil
+
 }
 
 // GetOrder meretrieve riwayat pesanan user menggunakan JOIN antara sql table orders, order_items, dan products.

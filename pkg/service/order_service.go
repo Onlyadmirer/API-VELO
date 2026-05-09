@@ -72,9 +72,26 @@ func (s *orderService) CreateOrder(userId int) (int, string, error) {
 
 // UpdateOrderStatus mengubah status pesanan (misal dari tertunda jadi selesai).
 func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
-	err := s.orderRepo.UpdateOrderStatus(orderID, status)
+
+	currentStatus, err := s.orderRepo.GetOrderStatus(orderID)
 	if err != nil {
 		return err
+	}
+
+	if currentStatus == "cancel" {
+		return nil
+	}
+
+	err = s.orderRepo.UpdateOrderStatus(orderID, status)
+	if err != nil {
+		return err
+	}
+
+	if status == "cancel" {
+		errRestock := s.orderRepo.RestoreStock(orderID)
+		if errRestock != nil {
+			return errRestock
+		}
 	}
 	return nil
 }

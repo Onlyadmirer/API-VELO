@@ -57,13 +57,13 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 	serverKey := os.Getenv("SERVER_KEY")
 
 	// validasi signature key midtrans
-	rawSignature := notifications.OrderID + notifications.StatusCode + strconv.Itoa(notifications.GrossAmount) + serverKey
+	rawSignature := notifications.OrderID + notifications.StatusCode + notifications.GrossAmount + serverKey
 
 	hasher := sha512.New()
 	hasher.Write([]byte(rawSignature))
 	calculatedSignature := hex.EncodeToString(hasher.Sum(nil))
 
-	if calculatedSignature != notifications.SignaturKey {
+	if calculatedSignature != notifications.SignatureKey {
 
 		utils.ResponseError(w, http.StatusUnauthorized, "invalid signature key")
 		return

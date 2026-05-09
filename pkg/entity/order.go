@@ -23,9 +23,9 @@ type MidtransNotifications struct {
 	TransactionStatus string `json:"transaction_status"`
 	OrderID           string `json:"order_id"`
 	FraudStatus       string `json:"fraud_status"`
-	GrossAmount       int    `json:"gross_amount"`
+	GrossAmount       string `json:"gross_amount"`
 	StatusCode        string `json:"status_code"`
-	SignaturKey       string `json:"signature_key"`
+	SignatureKey      string `json:"signature_key"`
 }
 
 // OrderHistory membungkus balasan riwayat pesanan.
