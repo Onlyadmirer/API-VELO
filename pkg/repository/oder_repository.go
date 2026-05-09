@@ -68,10 +68,17 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 		stock := item.Quantity
 
 		queryKurangiStock := `UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1`
-		_, err = tx.Exec(queryKurangiStock, stock, item.Product.ID)
+
+		result, err := tx.Exec(queryKurangiStock, stock, item.Product.ID)
 		if err != nil {
 			return 0, 0, fmt.Errorf("gagla kurangi stock product: %v", err)
 		}
+
+		rows, _ := result.RowsAffected()
+		if rows == 0 {
+			return 0, 0, fmt.Errorf("stok tidak cukup untuk produk id: %d", item.Product.ID)
+		}
+
 	}
 
 	// delete item yang ada di dalam cart karena sudah di order
