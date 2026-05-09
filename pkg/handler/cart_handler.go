@@ -25,7 +25,12 @@ func NewCartHandler(service service.CartService) *CartHandler {
 // AddToCart memproses request menambahkan barang ke keranjang.
 func (h *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	userID := r.Context().Value(middleware.UserIdKey).(int)
+	userIDRaw := r.Context().Value(middleware.UserIdKey)
+	userID, ok := userIDRaw.(int)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	var reqCart entity.AddCartRequest
 	if err := json.NewDecoder(r.Body).Decode(&reqCart); err != nil {
@@ -47,7 +52,12 @@ func (h *CartHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userID := r.Context().Value(middleware.UserIdKey).(int)
+	userIDRaw := r.Context().Value(middleware.UserIdKey)
+	userID, ok := userIDRaw.(int)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	cartItem, err := h.service.GetCart(userID)
 	if err != nil {

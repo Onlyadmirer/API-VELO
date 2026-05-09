@@ -24,7 +24,12 @@ func NewOrderHandler(service service.OrderService) *OrderHandler {
 // CheckOut menangani proses pemesanan dengan memanggil operasi Service untuk membuat transaksi.
 func (h *OrderHandler) CheckOut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	userID := r.Context().Value(middleware.UserIdKey).(int)
+	userIDRaw := r.Context().Value(middleware.UserIdKey)
+	userID, ok := userIDRaw.(int)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	orderID, RedirectURL, err := h.service.CreateOrder(userID)
 	if err != nil {
@@ -72,9 +77,14 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userId := r.Context().Value(middleware.UserIdKey).(int)
+	userIDRaw := r.Context().Value(middleware.UserIdKey)
+	userID, ok := userIDRaw.(int)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
-	order, err := h.service.GetOrder(userId)
+	order, err := h.service.GetOrder(userID)
 	if err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
