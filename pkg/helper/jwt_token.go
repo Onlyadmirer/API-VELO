@@ -2,6 +2,7 @@ package helper
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,7 +16,7 @@ func GenerateJWTToken(userID int, role string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte("SECRET_KEY"))
+	signedToken, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {
 		return "", fmt.Errorf("gagal membuat token: %v", err)
 
