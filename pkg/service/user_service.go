@@ -2,13 +2,12 @@ package service
 
 import (
 	"VELO-backend/pkg/entity"
+	"VELO-backend/pkg/helper"
 	"VELO-backend/pkg/repository"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -69,23 +68,14 @@ func (s *userService) UserLogin(reqLogin entity.LoginUser) (*http.Cookie, error)
 		return nil, fmt.Errorf("Email atau password salah")
 	}
 
-	claims := jwt.MapClaims{
-		"user_id": dataUser.ID,
-		"role":    dataUser.Role,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	secretKey := []byte(os.Getenv("SECRET_KEY"))
-
-	tokenString, err := token.SignedString(secretKey)
+	jwtToken, err := helper.GenerateJWTToken(dataUser.ID, dataUser.Role)
 	if err != nil {
-		return nil, fmt.Errorf("gagal membuat token: %v", err)
+		return nil, err
 	}
 
 	cookie := &http.Cookie{
 		Name:     "jwt_token",
-		Value:    tokenString,
+		Value:    jwtToken,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   true,
