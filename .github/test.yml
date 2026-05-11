@@ -1,0 +1,32 @@
+name: Go Unit Test Guard
+
+# Kapan aksi ini dijalankan?
+on:
+  push:
+    branches: ["main"] # Jalan otomatis setiap ada push ke branch main
+  pull_request:
+    branches: ["main"] # Jalan otomatis saat ada PR ke branch main
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest # GitHub akan menyewa komputer Linux gratis untukmu
+
+    steps:
+      # 1. GitHub meng-copy seluruh kodemu ke komputer Linux tersebut
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # 2. GitHub menginstal bahasa Golang
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.1" # Sesuaikan dengan versi Go milikmu
+
+      # 3. GitHub mengecek apakah ada file yang error soal library (seperti go mod tidy tadi)
+      - name: Install dependencies
+        run: go mod download
+
+      # 4. ACTION! GitHub menjalankan semua file _test.go di dalam proyekmu
+      - name: Run Tests
+        run: go test -v ./...
