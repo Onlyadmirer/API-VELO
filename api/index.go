@@ -2,6 +2,7 @@ package api
 
 import (
 	"VELO-backend/pkg/middleware"
+	"VELO-backend/pkg/payment"
 	"VELO-backend/pkg/repository"
 	"VELO-backend/pkg/service"
 	"database/sql"
@@ -42,6 +43,8 @@ func init() {
 		fmt.Println("gagal tekoneksi dengan database: ", err)
 	}
 
+	midtrans := &payment.MidtransClient{}
+
 	// user
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
@@ -54,7 +57,7 @@ func init() {
 
 	// order
 	orderRepo := repository.NewOrderRepository(db)
-	orderService := service.NewOrderService(orderRepo, cartRepo)
+	orderService := service.NewOrderService(orderRepo, cartRepo, midtrans)
 	orderHandler = handler.NewOrderHandler(orderService)
 
 	// product

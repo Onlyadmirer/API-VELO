@@ -4,6 +4,7 @@ import (
 	"VELO-backend/pkg/config"
 	"VELO-backend/pkg/handler"
 	"VELO-backend/pkg/middleware"
+	"VELO-backend/pkg/payment"
 	"VELO-backend/pkg/repository"
 	"VELO-backend/pkg/service"
 	"fmt"
@@ -30,6 +31,8 @@ func main() {
 	}
 	defer db.Close()
 
+	midtrans := &payment.MidtransClient{}
+
 	// user
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
@@ -42,7 +45,7 @@ func main() {
 
 	// order
 	orderRepo := repository.NewOrderRepository(db)
-	orderService := service.NewOrderService(orderRepo, cartRepo)
+	orderService := service.NewOrderService(orderRepo, cartRepo, midtrans)
 	orderHandler := handler.NewOrderHandler(orderService)
 
 	// product
