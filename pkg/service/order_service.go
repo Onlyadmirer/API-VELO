@@ -2,12 +2,9 @@ package service
 
 import (
 	"VELO-backend/pkg/entity"
+	"VELO-backend/pkg/payment"
 	"VELO-backend/pkg/repository"
 	"fmt"
-	"strconv"
-
-	"github.com/midtrans/midtrans-go"
-	"github.com/midtrans/midtrans-go/snap"
 )
 
 // OrderService menangani logika transaksi order dan checkout.
@@ -18,15 +15,17 @@ type OrderService interface {
 }
 
 type orderService struct {
-	orderRepo repository.OrderRepository
-	cartRepo  repository.CartRepository
+	orderRepo      repository.OrderRepository
+	cartRepo       repository.CartRepository
+	PaymentGateway payment.PaymentGateway
 }
 
 // NewOrderService membuat instance OrderService.
-func NewOrderService(orderRepo repository.OrderRepository, cartRepo repository.CartRepository) OrderService {
+func NewOrderService(orderRepo repository.OrderRepository, cartRepo repository.CartRepository, paymentGateway payment.PaymentGateway) OrderService {
 	return &orderService{
-		orderRepo: orderRepo,
-		cartRepo:  cartRepo,
+		orderRepo:      orderRepo,
+		cartRepo:       cartRepo,
+		PaymentGateway: paymentGateway,
 	}
 }
 
@@ -48,25 +47,12 @@ func (s *orderService) CreateOrder(userId int) (int, string, error) {
 		return 0, "", err
 	}
 
-	orderIDStr := strconv.Itoa(orderID)
-
-	resp := &snap.Request{
-		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  orderIDStr,
-			GrossAmt: int64(totalPrice),
-		},
-		Expiry: &snap.ExpiryDetails{
-			Duration: 15,
-			Unit:     "minute",
-		},
+	redirectURL, err := s.PaymentGateway.GenerateSnapURL(orderID, totalPrice)
+	if err != nil {
+		return 0, "", err
 	}
 
-	snapResp, errMidtrans := snap.CreateTransaction(resp)
-	if errMidtrans != nil {
-		return 0, "", fmt.Errorf("gagal membuat linkk pembayaran: %v", errMidtrans.GetMessage())
-	}
-
-	return orderID, snapResp.RedirectURL, nil
+	return orderID, redirectURL, nil
 
 }
 
