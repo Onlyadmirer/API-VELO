@@ -33,9 +33,11 @@ func main() {
 
 	midtrans := &payment.MidtransClient{}
 
+	emailService := service.NewEmailService()
+
 	// user
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo, emailService)
 	userHandler := handler.NewUserHandler(userService)
 
 	// cart
@@ -57,6 +59,7 @@ func main() {
 
 	// user
 	mux.HandleFunc("POST /api/users/register", userHandler.CreateUser)
+	mux.HandleFunc("GET /api/users/verify", userHandler.HandleVerify)
 	mux.HandleFunc("POST /api/users/login", userHandler.UserLogin)
 	mux.HandleFunc("POST /api/users/logout", middleware.JWTMiddleware(userHandler.LogOut))
 

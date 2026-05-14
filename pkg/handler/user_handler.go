@@ -37,8 +37,27 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.ResponseSuccess(w, http.StatusOK, "berhasil registrasi", user)
+	utils.ResponseSuccess(w, http.StatusOK, "Silahkan cek email untuk verifikasi", user)
 
+}
+
+// GET (Handle verify token)
+func (h *UserHandler) HandleVerify(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		utils.ResponseError(w, http.StatusBadRequest, "token tidak ditemukan")
+		return
+	}
+
+	err := h.service.VerifyEmail(token)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Berhasil verifikasi email, silahkan kembali ke halaman login", nil)
 }
 
 // POST (Login)
@@ -60,7 +79,7 @@ func (h *UserHandler) UserLogin(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, user)
 
-	utils.ResponseSuccess(w, http.StatusOK, "Login berhasil", user)
+	utils.ResponseSuccess(w, http.StatusOK, "Login berhasil", nil)
 
 }
 
