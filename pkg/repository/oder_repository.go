@@ -4,7 +4,6 @@ import (
 	"VELO-backend/pkg/entity"
 	"database/sql"
 	"fmt"
-	"log"
 )
 
 type OrderRepository interface {
@@ -38,10 +37,15 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 		if p := recover(); p != nil {
 			tx.Rollback()
 			panic(p)
-		} else if err != nil {
+		}
+
+		if err != nil {
 			tx.Rollback()
-		} else {
-			tx.Commit()
+			return
+		}
+
+		if commitErr := tx.Commit(); commitErr != nil {
+			err = commitErr
 		}
 	}()
 
@@ -52,10 +56,11 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 	}
 
 	// insert ke tabel orders
+	const OrderStatusUnpaid = "Unpaid"
 	query := `INSERT INTO orders (user_id, total_amount, status) VALUES ($1, $2, $3) RETURNING id`
-	err = tx.QueryRow(query, userId, totalPrice, "Unpaid").Scan(&orderId)
+	err = tx.QueryRow(query, userId, totalPrice, OrderStatusUnpaid).Scan(&orderId)
 	if err != nil {
-		return 0, 0, fmt.Errorf("gagal insert order: %v", err)
+		return 0, 0, fmt.Errorf("gagal insert order: %w", err)
 	}
 
 	// insert cart items ke order items
@@ -63,7 +68,7 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 		query := `INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)`
 		_, err = tx.Exec(query, orderId, item.Product.ID, item.Quantity, item.Product.Price)
 		if err != nil {
-			return 0, 0, fmt.Errorf("gagal insert order item: %v", err)
+			return 0, 0, fmt.Errorf("gagal insert order item: %w", err)
 		}
 
 		// kurangi stock product
@@ -73,10 +78,14 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 
 		result, err := tx.Exec(queryKurangiStock, stock, item.Product.ID)
 		if err != nil {
-			return 0, 0, fmt.Errorf("gagla kurangi stock product: %v", err)
+			return 0, 0, fmt.Errorf("gagal kurangi stock product: %v", err)
 		}
 
-		rows, _ := result.RowsAffected()
+		rows, err := result.RowsAffected()
+		if err != nil {
+			return 0, 0, err
+		}
+
 		if rows == 0 {
 			return 0, 0, fmt.Errorf("stok tidak cukup untuk produk id: %d", item.Product.ID)
 		}
@@ -87,7 +96,7 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 	queryDelete := `DELETE FROM cart_items WHERE cart_id = $1`
 	_, err = tx.Exec(queryDelete, cartId)
 	if err != nil {
-		return 0, 0, fmt.Errorf("gagal hapus item di keranjang: %v", err)
+		return 0, 0, fmt.Errorf("gagal hapus item di keranjang: %w", err)
 	}
 
 	return orderId, totalPrice, nil
@@ -113,7 +122,7 @@ func (r *orderRepository) GetOrderStatus(orderID int) (string, error) {
 
 	err := r.db.QueryRow(query, orderID).Scan(&status)
 	if err != nil {
-		return "", fmt.Errorf("gagal ambil status order")
+		return "", err
 	}
 
 	return status, nil
@@ -157,14 +166,21 @@ func (r *orderRepository) GetOrder(userId int) ([]entity.OrderHistory, error) {
 
 	var orderHistory []entity.OrderHistory
 
-	query := `SELECT oi.order_id, oi.quantity, o.total_amount, o.status, o.created_at, p.name
+	query := `SELECT 
+		oi.order_id, 
+		oi.quantity, 
+		o.total_amount, 
+		o.status, 
+		o.created_at, 
+		p.name
 	FROM order_items oi
 	JOIN orders o ON oi.order_id = o.id
 	JOIN products p ON oi.product_id = p.id
 	WHERE o.user_id = $1`
+
 	order, err := r.db.Query(query, userId)
 	if err != nil {
-		return nil, fmt.Errorf("gagal query ke database: %v", err)
+		return nil, fmt.Errorf("gagal query ke database: %w", err)
 	}
 
 	defer order.Close()
@@ -172,9 +188,15 @@ func (r *orderRepository) GetOrder(userId int) ([]entity.OrderHistory, error) {
 	for order.Next() {
 		var ord entity.OrderHistory
 
-		if err := order.Scan(&ord.Order.ID, &ord.Order.OrderItem.Quantity, &ord.Order.TotalAmount, &ord.Order.Status, &ord.Order.CreatedAt, &ord.Order.OrderItem.Product.Name); err != nil {
-			log.Println("error saat scan baris order history: ", err)
-			continue
+		err := order.Scan(
+			&ord.Order.ID,
+			&ord.Order.OrderItem.Quantity,
+			&ord.Order.TotalAmount,
+			&ord.Order.Status,
+			&ord.Order.CreatedAt,
+			&ord.Order.OrderItem.Product.Name)
+		if err != nil {
+			return nil, err
 		}
 
 		resp := entity.OrderHistory{
@@ -197,7 +219,7 @@ func (r *orderRepository) GetOrder(userId int) ([]entity.OrderHistory, error) {
 	}
 
 	if err = order.Err(); err != nil {
-		return nil, fmt.Errorf("terjadi kesalahan saat membaca baris data: %v", err)
+		return nil, fmt.Errorf("terjadi kesalahan saat membaca baris data: %w", err)
 	}
 
 	return orderHistory, nil

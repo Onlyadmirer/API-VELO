@@ -69,19 +69,22 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	orderID, _ := strconv.Atoi(notifications.OrderID)
+	orderID, err := strconv.Atoi(notifications.OrderID)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "invalid order id")
+	}
 
 	var paymentStatus string
 	switch notifications.TransactionStatus {
 	case "capture", "settlement":
 		paymentStatus = "Paid"
 	case "cancel", "expire":
-		paymentStatus = "cancel"
+		paymentStatus = "Canceled"
 	default:
 		paymentStatus = "Pending"
 	}
 
-	err := h.service.UpdateOrderStatus(orderID, paymentStatus)
+	err = h.service.UpdateOrderStatus(orderID, paymentStatus)
 	if err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
