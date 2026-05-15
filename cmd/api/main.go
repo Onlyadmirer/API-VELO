@@ -2,6 +2,7 @@ package main
 
 import (
 	"VELO-backend/pkg/config"
+	cronhandler "VELO-backend/pkg/cron_Handler"
 	"VELO-backend/pkg/handler"
 	"VELO-backend/pkg/middleware"
 	"VELO-backend/pkg/payment"
@@ -77,6 +78,9 @@ func main() {
 	mux.HandleFunc("POST /api/products", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.CreateProduct)))
 	mux.HandleFunc("DELETE /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.DeleteProduct)))
 	mux.HandleFunc("PUT /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.UpdateProduct)))
+
+	// cron
+	mux.HandleFunc("GET /api/cron", cronhandler.CronSendResponse)
 
 	port := os.Getenv("PORT")
 
