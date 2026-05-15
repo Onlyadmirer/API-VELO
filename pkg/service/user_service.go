@@ -4,12 +4,14 @@ import (
 	"VELO-backend/pkg/entity"
 	"VELO-backend/pkg/helper"
 	"VELO-backend/pkg/repository"
+	"database/sql"
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,10 +37,6 @@ func NewUserService(repo repository.UserRepository, email EmailService) UserServ
 
 // CreateUser memproses data pendaftaran, melakukan hashing password, dan menyimpan data pengguna baru ke database.
 func (s *userService) CreateUser(user entity.RegisterUser) (*entity.User, error) {
-	err := s.repo.FindByEmail(user.Email)
-	if err != nil {
-		return nil, err
-	}
 
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -58,22 +56,27 @@ func (s *userService) CreateUser(user entity.RegisterUser) (*entity.User, error)
 
 	dataUser, err := s.repo.CreateUser(newUser)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" {
+				return nil, errors.New("email sudah terdaftar")
+			}
+		}
 		return nil, err
 	}
 
 	go func() {
-		errEmail := s.email.SendVerificationEmail(user.Email, user.Name, token)
-		if errEmail != nil {
-			log.Println("[URGENT] Gagal kirim email verifikasi:", errEmail)
-		}
+		_ = s.email.SendVerificationEmail(user.Email, user.Name, token)
 	}()
 
 	return dataUser, nil
 }
 
 func (s *userService) VerifyEmail(token string) error {
-	err := s.repo.FindByVerifyToken(token)
+	err := s.repo.ActivateVerifyToken(token)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.New("invalid or expires token")
+		}
 		return err
 	}
 
@@ -86,6 +89,10 @@ func (s *userService) UserLogin(reqLogin entity.LoginUser) (*http.Cookie, error)
 	dataUser, err := s.repo.GetUserByEmail(reqLogin.Email)
 	if err != nil {
 		return nil, err
+	}
+
+	if dataUser == nil {
+		return nil, errors.New("email atau password salah")
 	}
 
 	compare := bcrypt.CompareHashAndPassword([]byte(dataUser.Password), []byte(reqLogin.Password))

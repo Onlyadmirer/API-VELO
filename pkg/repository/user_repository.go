@@ -3,15 +3,13 @@ package repository
 import (
 	"VELO-backend/pkg/entity"
 	"database/sql"
-	"fmt"
 )
 
 // UserRepository menangani kueri ke database khusus untuk pengguna.
 type UserRepository interface {
 	CreateUser(user entity.RegisterUser) (*entity.User, error)
-	FindByEmail(email string) error
 	GetUserByEmail(email string) (*entity.User, error)
-	FindByVerifyToken(token string) error
+	ActivateVerifyToken(token string) error
 }
 
 type userRepository struct {
@@ -35,13 +33,13 @@ func (r *userRepository) CreateUser(user entity.RegisterUser) (*entity.User, err
 
 	err := r.db.QueryRow(query, user.Name, user.Email, user.Password, user.Token, user.ExpiresAt).Scan(&u.Name, &u.Email, &u.Role, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("gagal create user: %v", err)
+		return nil, err
 	}
 
 	return &u, nil
 }
 
-func (r *userRepository) FindByVerifyToken(token string) error {
+func (r *userRepository) ActivateVerifyToken(token string) error {
 	query := `
 	UPDATE users SET 
 	is_verified = true,
@@ -53,7 +51,7 @@ func (r *userRepository) FindByVerifyToken(token string) error {
 
 	result, err := r.db.Exec(query, token)
 	if err != nil {
-		return fmt.Errorf("gagal update data user: %v", err)
+		return err
 	}
 
 	rows, err := result.RowsAffected()
@@ -61,26 +59,10 @@ func (r *userRepository) FindByVerifyToken(token string) error {
 		return err
 	}
 	if rows == 0 {
-		return fmt.Errorf("invalid or expired token")
+		return sql.ErrNoRows
 	}
 
 	return nil
-}
-
-// check existing user
-// FindByEmail memvalidasi kepemilikan alamat email (untuk mencegah duplikasi pendaftaran email).
-func (r *userRepository) FindByEmail(email string) error {
-	query := `SELECT id, email, password, role FROM users WHERE email = $1`
-	var user entity.User
-	err := r.db.QueryRow(query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Role)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil
-		}
-		return err
-	}
-
-	return fmt.Errorf("email sudah terdaftar")
 }
 
 // (Login) accept email and return datas user for jwt auth
@@ -90,7 +72,11 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 	var u entity.User
 	err := r.db.QueryRow(query, email).Scan(&u.ID, &u.Password, &u.Role, &u.IsVerified)
 	if err != nil {
-		return nil, fmt.Errorf("gagal ambil data user")
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		return nil, err
 	}
 
 	return &u, nil
