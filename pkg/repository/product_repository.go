@@ -4,7 +4,6 @@ import (
 	"VELO-backend/pkg/entity"
 	"database/sql"
 	"fmt"
-	"log"
 )
 
 // ProductRepository menangani kueri ke database untuk entitas produk.
@@ -36,7 +35,7 @@ func (r *productRepository) GetAllProducts(page int, limit int) (entity.Paginate
 	countQuery := `SELECT COUNT(id) FROM products`
 	err := r.db.QueryRow(countQuery).Scan(&totalItems)
 	if err != nil {
-		return entity.PaginatedProductResponse{}, fmt.Errorf("gagal hitung jumlah products")
+		return entity.PaginatedProductResponse{}, err
 	}
 
 	offset := (page - 1) * limit
@@ -44,7 +43,7 @@ func (r *productRepository) GetAllProducts(page int, limit int) (entity.Paginate
 	query := "SELECT id, name, price, category, stock, image FROM products LIMIT $1 OFFSET $2"
 	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
-		return entity.PaginatedProductResponse{}, fmt.Errorf("gagal mengambil data products: %v", err)
+		return entity.PaginatedProductResponse{}, fmt.Errorf("gagal mengambil data products: %w", err)
 	}
 
 	defer rows.Close()
@@ -54,8 +53,7 @@ func (r *productRepository) GetAllProducts(page int, limit int) (entity.Paginate
 
 		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Category, &p.Stock, &p.Image)
 		if err != nil {
-			log.Println("Error saat scan baris produk: ", err)
-			continue
+			return entity.PaginatedProductResponse{}, err
 		}
 
 		products = append(products, p)
@@ -94,7 +92,7 @@ func (r *productRepository) CreateProduct(req entity.Product) error {
 	query := "INSERT INTO products (name, stock, category, price, image) VALUES ($1, $2, $3, $4, $5)"
 	_, err := r.db.Exec(query, req.Name, req.Stock, req.Category, req.Price, req.Image)
 	if err != nil {
-		return fmt.Errorf("gagal menambahkan produk: %v", err)
+		return fmt.Errorf("gagal menambahkan produk: %w", err)
 	}
 
 	return nil
@@ -106,7 +104,7 @@ func (r *productRepository) DeleteProduct(id int) error {
 	query := "DELETE FROM products WHERE id = $1"
 	result, err := r.db.Exec(query, id)
 	if err != nil {
-		return fmt.Errorf("gagal hapus product: %v", err)
+		return fmt.Errorf("gagal hapus product: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
