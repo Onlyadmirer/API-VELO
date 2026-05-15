@@ -78,6 +78,12 @@ func main() {
 	mux.HandleFunc("DELETE /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.DeleteProduct)))
 	mux.HandleFunc("PUT /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.UpdateProduct)))
 
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "8080"
+	}
+
 	fmt.Println("server berjalan di http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
