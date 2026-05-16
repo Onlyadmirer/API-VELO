@@ -3,34 +3,67 @@ package service
 import (
 	"VELO-backend/pkg/entity"
 	"VELO-backend/pkg/repository"
+	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 // ProductService mendefinisikan kontrak untuk layanan produk.
 type ProductService interface {
-	GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error)
+	GetAllProducts(tx context.Context, page int, limit int) (entity.PaginatedProductResponse, error)
 	CreateProduct(req entity.Product) error
 	DeleteProduct(id int) error
 	UpdateProduct(id int, req entity.Product) (*entity.Product, error)
 }
 
 type productService struct {
-	repo repository.ProductRepository
+	repo  repository.ProductRepository
+	redis *redis.Client
 }
 
 // NewProductService membuat instance ProductService baru.
-func NewProductService(repo repository.ProductRepository) ProductService {
+func NewProductService(repo repository.ProductRepository, redis *redis.Client) ProductService {
 	return &productService{
-		repo: repo,
+		repo:  repo,
+		redis: redis,
 	}
 }
 
 // GetAllProducts mengambil daftar produk dengan mendukung sistem paginasi.
-func (s *productService) GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error) {
+func (s *productService) GetAllProducts(ctx context.Context, page int, limit int) (entity.PaginatedProductResponse, error) {
 
+	cacheKey := fmt.Sprintf("velo:products:page:%d:limit%d", page, limit)
+
+	cachedData, err := s.redis.Get(ctx, cacheKey).Result()
+
+	if err != nil && err != redis.Nil {
+		fmt.Println("koneksi redis bermasalah: ", err)
+	}
+
+	if err == nil {
+		log.Printf("CACHE HIT: untuk kunci: %s\n", cacheKey)
+
+		var products entity.PaginatedProductResponse
+		if json.Unmarshal([]byte(cachedData), &products) == nil {
+			return products, nil
+		}
+	}
+
+	// jika cache kosong maka ambil di db
 	products, err := s.repo.GetAllProducts(page, limit)
 	if err != nil {
 		return entity.PaginatedProductResponse{}, err
+	}
+
+	// memasukkan ke cache
+	jsonData, err := json.Marshal(products)
+	if err == nil {
+		_ = s.redis.Set(ctx, cacheKey, jsonData, 5*time.Minute).Err()
 	}
 
 	return products, nil

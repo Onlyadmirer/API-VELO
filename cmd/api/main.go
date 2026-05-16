@@ -33,7 +33,6 @@ func main() {
 	defer db.Close()
 
 	redisClient := config.ConnectRedis()
-	_ = redisClient
 
 	midtrans := &payment.MidtransClient{}
 
@@ -56,7 +55,7 @@ func main() {
 
 	// product
 	productRepo := repository.NewProductRepository(db)
-	productService := service.NewProductService(productRepo)
+	productService := service.NewProductService(productRepo, redisClient)
 	productHandler := handler.NewProductHandler(productService)
 
 	mux := http.NewServeMux()

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"VELO-backend/pkg/config"
 	"VELO-backend/pkg/middleware"
 	"VELO-backend/pkg/payment"
 	"VELO-backend/pkg/repository"
@@ -43,6 +44,8 @@ func init() {
 		fmt.Println("gagal tekoneksi dengan database: ", err)
 	}
 
+	redisClient := config.ConnectRedis()
+
 	midtrans := &payment.MidtransClient{}
 
 	emailService := service.NewEmailService()
@@ -64,7 +67,7 @@ func init() {
 
 	// product
 	productRepo := repository.NewProductRepository(db)
-	productService := service.NewProductService(productRepo)
+	productService := service.NewProductService(productRepo, redisClient)
 	productHandler = handler.NewProductHandler(productService)
 }
 

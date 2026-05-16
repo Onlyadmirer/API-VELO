@@ -28,6 +28,7 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
+	ctx := r.Context()
 
 	page := 1
 	if pageStr != "" {
@@ -42,7 +43,7 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	products, err := h.service.GetAllProducts(page, limit)
+	products, err := h.service.GetAllProducts(ctx, page, limit)
 	if err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
