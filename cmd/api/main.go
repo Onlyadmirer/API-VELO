@@ -32,6 +32,9 @@ func main() {
 	}
 	defer db.Close()
 
+	redisClient := config.ConnectRedis()
+	_ = redisClient
+
 	midtrans := &payment.MidtransClient{}
 
 	emailService := service.NewEmailService()
