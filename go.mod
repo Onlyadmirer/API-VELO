@@ -18,6 +18,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/redis/go-redis/v9 v9.19.0 // indirect
 	github.com/resend/resend-go/v3 v3.6.0 // indirect
+	github.com/rs/cors v1.11.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

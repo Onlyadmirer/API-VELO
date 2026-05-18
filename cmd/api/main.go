@@ -15,6 +15,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/midtrans/midtrans-go"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -84,6 +85,21 @@ func main() {
 	// cron
 	mux.HandleFunc("GET /api/cron", cronhandler.CronSendResponse)
 
+	handler := cors.New(cors.Options{
+		AllowedOrigins: []string{
+			"http://localhost:3000",
+		},
+		AllowedMethods: []string{
+			"GET",
+			"POST",
+			"PUT",
+			"DELETE",
+			"OPTIONS",
+		},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}).Handler(mux)
+
 	port := os.Getenv("PORT")
 
 	if port == "" {
@@ -91,5 +107,5 @@ func main() {
 	}
 
 	fmt.Println("server berjalan di http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
