@@ -57,7 +57,7 @@ VELO Backend adalah layanan RESTful API untuk platform e-commerce (mencakup prod
 1. **Clone repositori ini:**
 
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/Onlyadmirer/API-VELO.git
    cd VELO-backend
    ```
 
