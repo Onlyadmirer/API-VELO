@@ -28,7 +28,7 @@ func NewEmailService() EmailService {
 
 func (s *resendEmailService) SendVerificationEmail(toEmail string, name string, verifyToken string) error {
 
-	verifyURL := fmt.Sprintf("http://localhost:3000/api/users/verify?token=%s", verifyToken)
+	verifyURL := fmt.Sprintf("http://localhost:3000/verify-email?token=%s", verifyToken)
 
 	htmlBody := fmt.Sprintf(`
 		<div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
