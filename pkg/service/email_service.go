@@ -41,7 +41,7 @@ func (s *resendEmailService) SendVerificationEmail(toEmail string, name string, 
 	`, name, verifyURL)
 
 	params := &resend.SendEmailRequest{
-		From:    "VELO Admin <onboarding@resend.dev>",
+		From:    "Akmaldev@akmaldev.my.id",
 		To:      []string{toEmail},
 		Subject: "Verifikasi Akun VELO",
 		Html:    htmlBody,

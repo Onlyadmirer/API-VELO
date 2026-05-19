@@ -6,9 +6,9 @@ import (
 )
 
 type Responses struct {
-	Status  int
-	Message string
-	Data    any
+	Status  int    `json:"status"`
+	Message string `json:"Message"`
+	Data    any    `json:"data"`
 }
 
 func ResponseSuccess(w http.ResponseWriter, status int, message string, data any) {
