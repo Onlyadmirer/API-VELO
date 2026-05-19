@@ -7,7 +7,7 @@ import (
 
 type Responses struct {
 	Status  int    `json:"status"`
-	Message string `json:"Message"`
+	Message string `json:"message"`
 	Data    any    `json:"data"`
 }
 
