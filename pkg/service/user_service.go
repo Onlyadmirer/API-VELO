@@ -116,7 +116,7 @@ func (s *userService) UserLogin(reqLogin entity.LoginUser) (*http.Cookie, error)
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 		Path:     "/",
 	}
 
