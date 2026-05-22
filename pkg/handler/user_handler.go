@@ -115,10 +115,5 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	resp := entity.User{
-		Name:  dataUser.Name,
-		Email: dataUser.Email,
-	}
-
-	utils.ResponseSuccess(w, http.StatusOK, "Get user datas successfully", resp)
+	utils.ResponseSuccess(w, http.StatusOK, "Get user datas successfully", dataUser)
 }
