@@ -115,8 +115,8 @@ func (s *userService) UserLogin(reqLogin entity.LoginUser) (*http.Cookie, error)
 		Value:    jwtToken,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteDefaultMode,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 	}
 
