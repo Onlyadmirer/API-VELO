@@ -84,10 +84,18 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 }
 
 func (r *userRepository) GetUserByID(userId int) (*entity.User, error) {
-	query := `SELECT name, email FROM users WHERE id = $1`
+	query := `SELECT id, name, email, role, is_verified, created_at, updated_at FROM users WHERE id = $1`
 
 	var u entity.User
-	err := r.db.QueryRow(query, userId).Scan(&u.Name, &u.Email)
+	err := r.db.QueryRow(query, userId).Scan(
+		&u.ID,
+		&u.Name,
+		&u.Email,
+		&u.Role,
+		&u.IsVerified,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
