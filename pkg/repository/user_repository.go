@@ -10,6 +10,7 @@ type UserRepository interface {
 	CreateUser(user entity.RegisterUser) (*entity.User, error)
 	GetUserByEmail(email string) (*entity.User, error)
 	ActivateVerifyToken(token string) error
+	GetUserByID(userId int) (*entity.User, error)
 }
 
 type userRepository struct {
@@ -71,6 +72,22 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 	query := `SELECT id, password, role, is_verified FROM users WHERE email = $1`
 	var u entity.User
 	err := r.db.QueryRow(query, email).Scan(&u.ID, &u.Password, &u.Role, &u.IsVerified)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (r *userRepository) GetUserByID(userId int) (*entity.User, error) {
+	query := `SELECT name, email FROM users WHERE id = $1`
+
+	var u entity.User
+	err := r.db.QueryRow(query, userId).Scan(&u.Name, &u.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

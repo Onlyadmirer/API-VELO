@@ -2,6 +2,7 @@ package handler
 
 import (
 	"VELO-backend/pkg/entity"
+	"VELO-backend/pkg/middleware"
 	"VELO-backend/pkg/service"
 	"VELO-backend/pkg/utils"
 	"encoding/json"
@@ -98,4 +99,21 @@ func (h *UserHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`"message: berhasil log out"`))
+}
+
+func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	userIdRow := r.Context().Value(middleware.UserIdKey)
+
+	userId, ok := userIdRow.(int)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	dataUser, err := h.service.GetUser(userId)
+	if err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Get user datas successfully", dataUser)
 }

@@ -20,6 +20,7 @@ type UserService interface {
 	CreateUser(user entity.RegisterUser) (*entity.User, error)
 	UserLogin(reqLogin entity.LoginUser) (*http.Cookie, error)
 	VerifyEmail(token string) error
+	GetUser(userID int) (*entity.User, error)
 }
 
 type userService struct {
@@ -120,4 +121,17 @@ func (s *userService) UserLogin(reqLogin entity.LoginUser) (*http.Cookie, error)
 	}
 
 	return cookie, nil
+}
+
+func (s *userService) GetUser(userID int) (*entity.User, error) {
+	dataUser, err := s.repo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if dataUser == nil {
+		return nil, errors.New("User not Found")
+	}
+
+	return dataUser, nil
 }

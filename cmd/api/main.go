@@ -65,6 +65,7 @@ func main() {
 	mux.HandleFunc("POST /api/users/register", userHandler.CreateUser)
 	mux.HandleFunc("GET /api/users/verify", userHandler.HandleVerify)
 	mux.HandleFunc("POST /api/users/login", userHandler.UserLogin)
+	mux.HandleFunc("GET /api/users/me", middleware.JWTMiddleware(userHandler.GetUser))
 	mux.HandleFunc("POST /api/users/logout", middleware.JWTMiddleware(userHandler.LogOut))
 
 	// cart
