@@ -11,6 +11,7 @@ type CartRepository interface {
 	GetOrCreateCart(userId int) (int, error)
 	UpsertCartItem(cartID int, productID int, quantity int) error
 	GetCart(userId int) ([]entity.CartItemResponse, error)
+	UpdateCartItemQuantity(cartId int, cartItemId int, quantity int) error
 }
 
 type cartRepository struct {
@@ -137,4 +138,26 @@ func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) 
 	}
 
 	return cartItems, nil
+}
+
+func (r *cartRepository) UpdateCartItemQuantity(cartId int, cartItemId int, quantity int) error {
+	query := `UPDATE cart_items SET quantity = $1
+	WHERE id = $2 AND cart_id = $3`
+
+	result, err := r.db.Exec(query, quantity, cartItemId, cartId)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return fmt.Errorf("cart item not found")
+	}
+
+	return nil
+
 }

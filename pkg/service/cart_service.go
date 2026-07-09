@@ -3,12 +3,14 @@ package service
 import (
 	"VELO-backend/pkg/entity"
 	"VELO-backend/pkg/repository"
+	"fmt"
 )
 
 // CartService mendefinisikan kontrak untuk layanan keranjang belanja pelanggan.
 type CartService interface {
 	AddToCart(userID int, req entity.AddCartRequest) error
 	GetCart(userId int) ([]entity.CartItemResponse, error)
+	UpdateCartItemQuantity(userId int, cartItemId int, quantity int) ([]entity.CartItemResponse, error)
 }
 
 type cartService struct {
@@ -46,4 +48,23 @@ func (s *cartService) GetCart(userId int) ([]entity.CartItemResponse, error) {
 	}
 
 	return cartItem, nil
+}
+
+func (s *cartService) UpdateCartItemQuantity(userId int, cartItemId int, quantity int) ([]entity.CartItemResponse, error) {
+
+	if quantity <= 0 {
+		return nil, fmt.Errorf("invalid quantity")
+	}
+
+	cartId, err := s.repo.GetOrCreateCart(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.repo.UpdateCartItemQuantity(cartId, cartItemId, quantity)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.repo.GetCart(userId)
 }

@@ -37,3 +37,7 @@ type ProductResponse struct {
 	Name  string  `json:"name"`
 	Price float64 `json:"price"`
 }
+
+type UpdateCartItemRequest struct {
+	Quantity int `json:"quantity"`
+}

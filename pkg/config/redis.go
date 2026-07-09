@@ -12,12 +12,12 @@ import (
 func ConnectRedis() *redis.Client {
 	redisURL := os.Getenv("REDIS_URL")
 	if redisURL == "" {
-		log.Fatal("REDIS_URL belum di-set di .env")
+		log.Println("REDIS_URL belum di-set di .env")
 	}
 
 	opt, err := redis.ParseURL(redisURL)
 	if err != nil {
-		log.Fatal("gagal membaca Redis url: ", err)
+		log.Println("gagal membaca Redis url: ", err)
 	}
 
 	client := redis.NewClient(opt)
@@ -25,10 +25,11 @@ func ConnectRedis() *redis.Client {
 	ctx := context.Background()
 	pong, err := client.Ping(ctx).Result()
 	if err != nil {
-		log.Fatal("gagal konek dengan redis upstash")
-	}
+		log.Println("gagal konek dengan redis upstash")
+	} else {
 
-	fmt.Println("Berhasil konek ke redis upstash!:", pong)
+		fmt.Println("Berhasil konek ke redis upstash!:", pong)
+	}
 
 	return client
 }

@@ -7,6 +7,7 @@ import (
 	"VELO-backend/pkg/utils"
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 // CartHandler bertanggung jawab melayani rute HTTP keranjang.
@@ -66,4 +67,37 @@ func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.ResponseSuccess(w, http.StatusOK, "berhasil ambil cart items", cartItem)
+}
+
+func (h *CartHandler) UpdateCartItemQuantity(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userIdRaw := r.Context().Value(middleware.UserIdKey)
+	userId, ok := userIdRaw.(int)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	id := r.PathValue("id")
+
+	var quantityUpdate entity.UpdateCartItemRequest
+	if err := json.NewDecoder(r.Body).Decode(&quantityUpdate); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "input invalid")
+		return
+	}
+
+	cartItemIdParse, err := strconv.Atoi(id)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "invalid ID")
+		return
+	}
+
+	cartItem, err := h.service.UpdateCartItemQuantity(userId, cartItemIdParse, quantityUpdate.Quantity)
+	if err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "update successfully", cartItem)
 }

@@ -37,6 +37,9 @@ func (m *MockOrderRepo) CreateOrder(u int, c int, items []entity.CartItemRespons
 
 func (m *MockCartRepo) GetOrCreateCart(userId int) (int, error)                      { return 0, nil }
 func (m *MockCartRepo) UpsertCartItem(cartID int, productID int, quantity int) error { return nil }
+func (m *MockCartRepo) UpdateCartItemQuantity(cartId int, cartItemId int, quantity int) error {
+	return nil
+}
 
 func (m *MockOrderRepo) UpdateOrderStatus(orderID int, status string) error { return nil }
 func (m *MockOrderRepo) GetOrder(userId int) ([]entity.OrderHistory, error) { return nil, nil }
