@@ -11,6 +11,7 @@ type CartService interface {
 	AddToCart(userID int, req entity.AddCartRequest) error
 	GetCart(userId int) ([]entity.CartItemResponse, error)
 	UpdateCartItemQuantity(userId int, cartItemId int, quantity int) ([]entity.CartItemResponse, error)
+	DeleteCartItem(userId int, cartItemId int) error
 }
 
 type cartService struct {
@@ -56,7 +57,7 @@ func (s *cartService) UpdateCartItemQuantity(userId int, cartItemId int, quantit
 		return nil, fmt.Errorf("invalid quantity")
 	}
 
-	cartId, err := s.repo.GetOrCreateCart(userId)
+	cartId, err := s.repo.GetCartId(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -67,4 +68,18 @@ func (s *cartService) UpdateCartItemQuantity(userId int, cartItemId int, quantit
 	}
 
 	return s.repo.GetCart(userId)
+}
+
+func (s *cartService) DeleteCartItem(userId int, cartItemId int) error {
+	cartId, err := s.repo.GetCartId(userId)
+	if err != nil {
+		return err
+	}
+
+	err = s.repo.DeleteCartItem(cartId, cartItemId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -101,3 +101,31 @@ func (h *CartHandler) UpdateCartItemQuantity(w http.ResponseWriter, r *http.Requ
 
 	utils.ResponseSuccess(w, http.StatusOK, "update successfully", cartItem)
 }
+
+func (h *CartHandler) DeleteCartItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userIdRaw := r.Context().Value(middleware.UserIdKey)
+	userID, ok := userIdRaw.(int)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	cartItemIdRaw := r.PathValue("id")
+
+	cartItemId, err := strconv.Atoi(cartItemIdRaw)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "invalid Id")
+		return
+	}
+
+	err = h.service.DeleteCartItem(userID, cartItemId)
+	if err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Delete item successfully", nil)
+
+}

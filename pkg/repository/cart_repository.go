@@ -12,6 +12,8 @@ type CartRepository interface {
 	UpsertCartItem(cartID int, productID int, quantity int) error
 	GetCart(userId int) ([]entity.CartItemResponse, error)
 	UpdateCartItemQuantity(cartId int, cartItemId int, quantity int) error
+	DeleteCartItem(CartId int, cartItemId int) error
+	GetCartId(userID int) (int, error)
 }
 
 type cartRepository struct {
@@ -38,12 +40,28 @@ func (r *cartRepository) GetOrCreateCart(userId int) (int, error) {
 	`
 	var id int
 	err := r.db.QueryRow(query, userId).Scan(&id)
-
+	if err == sql.ErrNoRows {
+		return 0, err
+	}
 	if err != nil {
-		return 0, fmt.Errorf("gagal get/create cart: %w", err)
+		return 0, err
 	}
 
 	return id, nil
+}
+
+func (r *cartRepository) GetCartId(userID int) (int, error) {
+	query := `SELECT id FROM carts WHERE user_id = $1`
+
+	var id int
+	err := r.db.QueryRow(query, userID).Scan(&id)
+
+	if err == sql.ErrNoRows {
+		return 0, err
+	}
+
+	return id, nil
+
 }
 
 // UpsertCartItem memperbarui jumlah (quantity) item jika sudah ada, atau menambahkannya bila belum ada.
@@ -150,9 +168,6 @@ func (r *cartRepository) UpdateCartItemQuantity(cartId int, cartItemId int, quan
 	}
 
 	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
 
 	if rows == 0 {
 		return fmt.Errorf("cart item not found")
@@ -160,4 +175,22 @@ func (r *cartRepository) UpdateCartItemQuantity(cartId int, cartItemId int, quan
 
 	return nil
 
+}
+
+func (r *cartRepository) DeleteCartItem(CartId int, cartItemId int) error {
+	query := `DELETE FROM cart_items 
+	WHERE id = $1 AND cart_id = $2`
+
+	result, err := r.db.Exec(query, cartItemId, CartId)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+
+	if rows == 0 {
+		return fmt.Errorf("cart item not found")
+	}
+
+	return nil
 }
