@@ -14,6 +14,7 @@ type CartRepository interface {
 	UpdateCartItemQuantity(cartId int, cartItemId int, quantity int) error
 	DeleteCartItem(CartId int, cartItemId int) error
 	GetCartId(userID int) (int, error)
+	ClearCart(userID int) error
 }
 
 type cartRepository struct {
@@ -187,9 +188,31 @@ func (r *cartRepository) DeleteCartItem(CartId int, cartItemId int) error {
 	}
 
 	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
 
 	if rows == 0 {
 		return fmt.Errorf("cart item not found")
+	}
+
+	return nil
+}
+
+func (r *cartRepository) ClearCart(userID int) error {
+	query := `DELETE FROM carts WHERE user_id = $1`
+
+	result, err := r.db.Exec(query, userID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return nil
 	}
 
 	return nil

@@ -12,6 +12,7 @@ type CartService interface {
 	GetCart(userId int) ([]entity.CartItemResponse, error)
 	UpdateCartItemQuantity(userId int, cartItemId int, quantity int) ([]entity.CartItemResponse, error)
 	DeleteCartItem(userId int, cartItemId int) error
+	ClearCart(userID int) error
 }
 
 type cartService struct {
@@ -77,6 +78,15 @@ func (s *cartService) DeleteCartItem(userId int, cartItemId int) error {
 	}
 
 	err = s.repo.DeleteCartItem(cartId, cartItemId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *cartService) ClearCart(userID int) error {
+	err := s.repo.ClearCart(userID)
 	if err != nil {
 		return err
 	}

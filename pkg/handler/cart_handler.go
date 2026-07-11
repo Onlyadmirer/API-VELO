@@ -106,7 +106,7 @@ func (h *CartHandler) DeleteCartItem(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	userIdRaw := r.Context().Value(middleware.UserIdKey)
-	userID, ok := userIdRaw.(int)
+	userId, ok := userIdRaw.(int)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -120,12 +120,32 @@ func (h *CartHandler) DeleteCartItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.DeleteCartItem(userID, cartItemId)
+	err = h.service.DeleteCartItem(userId, cartItemId)
 	if err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	utils.ResponseSuccess(w, http.StatusOK, "Delete item successfully", nil)
+
+}
+
+func (h *CartHandler) ClearCart(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userIDRaw := r.Context().Value(middleware.UserIdKey)
+	userId, ok := userIDRaw.(int)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	err := h.service.ClearCart(userId)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Clear cart successfully", nil)
 
 }

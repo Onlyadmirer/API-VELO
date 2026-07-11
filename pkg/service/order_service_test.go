@@ -46,6 +46,7 @@ func (m *MockCartRepo) DeleteCartItem(cartId int, cartItemId int) error {
 func (m *MockCartRepo) GetCartId(userID int) (int, error) {
 	return 0, nil
 }
+func (m *MockCartRepo) ClearCart(userID int) error { return nil }
 
 func (m *MockOrderRepo) UpdateOrderStatus(orderID int, status string) error { return nil }
 func (m *MockOrderRepo) GetOrder(userId int) ([]entity.OrderHistory, error) { return nil, nil }

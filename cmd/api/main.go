@@ -73,6 +73,7 @@ func main() {
 	mux.HandleFunc("GET /api/cart", middleware.JWTMiddleware(cartHandler.GetCart))
 	mux.HandleFunc("PUT /api/cart/{id}", middleware.JWTMiddleware(cartHandler.UpdateCartItemQuantity))
 	mux.HandleFunc("DELETE /api/cart/{id}", middleware.JWTMiddleware(cartHandler.DeleteCartItem))
+	mux.HandleFunc("DELETE /api/cart", middleware.JWTMiddleware(cartHandler.ClearCart))
 
 	// order
 	mux.HandleFunc("POST /api/checkout", middleware.JWTMiddleware(orderHandler.CheckOut))
