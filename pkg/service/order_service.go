@@ -88,7 +88,7 @@ func (s *orderService) CreateOrder(userId int, ctx context.Context, idempotencyK
 			"order_id":     orderID,
 			"redirect_url": redirectURL,
 		})
-		s.redis.Set(ctx, redisKey, cacheData, 1*time.Hour)
+		s.redis.Set(ctx, redisKey, cacheData, 15*time.Minute)
 	}
 
 	return orderID, redirectURL, nil
