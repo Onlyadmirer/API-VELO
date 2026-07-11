@@ -27,6 +27,13 @@ func NewOrderHandler(service service.OrderService) *OrderHandler {
 // CheckOut menangani proses pemesanan dengan memanggil operasi Service untuk membuat transaksi.
 func (h *OrderHandler) CheckOut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	idempotencyKey := r.Header.Get("X-Idempotency-Key")
+	if idempotencyKey == "" {
+		utils.ResponseError(w, http.StatusBadRequest, "Idempotency key required")
+		return
+	}
+
 	userIDRaw := r.Context().Value(middleware.UserIdKey)
 	userID, ok := userIDRaw.(int)
 	if !ok {
@@ -34,7 +41,7 @@ func (h *OrderHandler) CheckOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderID, RedirectURL, err := h.service.CreateOrder(userID)
+	orderID, RedirectURL, err := h.service.CreateOrder(userID, r.Context(), idempotencyKey)
 	if err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return

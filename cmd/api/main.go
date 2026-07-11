@@ -51,7 +51,7 @@ func main() {
 
 	// order
 	orderRepo := repository.NewOrderRepository(db)
-	orderService := service.NewOrderService(orderRepo, cartRepo, midtrans)
+	orderService := service.NewOrderService(orderRepo, cartRepo, midtrans, redisClient)
 	orderHandler := handler.NewOrderHandler(orderService)
 
 	// product

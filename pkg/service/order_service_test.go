@@ -2,6 +2,7 @@ package service
 
 import (
 	"VELO-backend/pkg/entity"
+	"context"
 	"errors"
 	"os"
 	"testing"
@@ -60,16 +61,17 @@ func TestOrderService(t *testing.T) {
 
 	t.Run("cart kosong", func(t *testing.T) {
 		userID := 99
+		idempotency := "idempotency"
 
 		cartRepoFake := new(MockCartRepo)
 		orderRepoFake := new(MockOrderRepo)
 		midtransFake := new(MockPaymentGateway)
 
-		orderService := NewOrderService(orderRepoFake, cartRepoFake, midtransFake)
+		orderService := NewOrderService(orderRepoFake, cartRepoFake, midtransFake, nil)
 
 		cartRepoFake.On("GetCart", userID).Return([]entity.CartItemResponse{}, nil)
 
-		orderID, redirectURL, err := orderService.CreateOrder(userID)
+		orderID, redirectURL, err := orderService.CreateOrder(userID, context.Background(), idempotency)
 
 		assert.Error(t, err)
 		assert.Equal(t, "keranjang masih kosong", err.Error())
@@ -79,18 +81,19 @@ func TestOrderService(t *testing.T) {
 
 	t.Run("database error", func(t *testing.T) {
 		userID := 99
+		idempotency := "idempotency"
 
 		cartRepoFake := new(MockCartRepo)
 		orderRepoFake := new(MockOrderRepo)
 		midtransFake := new(MockPaymentGateway)
 
-		orderService := NewOrderService(orderRepoFake, cartRepoFake, midtransFake)
+		orderService := NewOrderService(orderRepoFake, cartRepoFake, midtransFake, nil)
 
 		dbErr := errors.New("database timeout")
 
 		cartRepoFake.On("GetCart", userID).Return([]entity.CartItemResponse{}, dbErr)
 
-		orderID, redirectURL, err := orderService.CreateOrder(userID)
+		orderID, redirectURL, err := orderService.CreateOrder(userID, context.Background(), idempotency)
 
 		assert.Error(t, err)
 		assert.Equal(t, "database timeout", err.Error())
@@ -103,12 +106,13 @@ func TestOrderService(t *testing.T) {
 	t.Run("checkout success", func(t *testing.T) {
 
 		userID := 99
+		idempotency := "idempotency"
 
 		cartRepoFake := new(MockCartRepo)
 		orderRepoFake := new(MockOrderRepo)
 		midtransFake := new(MockPaymentGateway)
 
-		orderService := NewOrderService(orderRepoFake, cartRepoFake, midtransFake)
+		orderService := NewOrderService(orderRepoFake, cartRepoFake, midtransFake, nil)
 
 		mockItems := []entity.CartItemResponse{
 			{ID: 1, Quantity: 2},
@@ -120,7 +124,7 @@ func TestOrderService(t *testing.T) {
 
 		midtransFake.On("GenerateSnapURL", mock.Anything, mock.Anything).Return("url-test.com", nil)
 
-		orderID, redirectURL, err := orderService.CreateOrder(userID)
+		orderID, redirectURL, err := orderService.CreateOrder(userID, context.Background(), idempotency)
 
 		assert.NoError(t, err)
 		assert.Equal(t, 101, orderID)
