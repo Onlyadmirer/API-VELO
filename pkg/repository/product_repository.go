@@ -9,6 +9,7 @@ import (
 // ProductRepository menangani kueri ke database untuk entitas produk.
 type ProductRepository interface {
 	GetAllProducts(page int, limit int) (entity.PaginatedProductResponse, error)
+	GetProductById(productId int) (*entity.Product, error)
 	CreateProduct(req entity.Product) error
 	DeleteProduct(id int) error
 	UpdateProduct(id int, req entity.Product) (*entity.Product, error)
@@ -84,6 +85,18 @@ func (r *productRepository) GetAllProducts(page int, limit int) (entity.Paginate
 	}
 
 	return result, nil
+}
+
+func (r *productRepository) GetProductById(productId int) (*entity.Product, error) {
+	query := `SELECT id, name, stock, category, price, image FROM products WHERE id = $1`
+
+	var prod entity.Product
+	err := r.db.QueryRow(query, productId).Scan(&prod.ID, &prod.Name, &prod.Stock, &prod.Category, &prod.Price, &prod.Image)
+	if err != nil {
+		return nil, err
+	}
+
+	return &prod, nil
 }
 
 // POST

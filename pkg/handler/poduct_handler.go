@@ -56,6 +56,27 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 
 }
 
+func (h *ProductHandler) GetProductById(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	productIdRow := r.PathValue("id")
+
+	productId, err := strconv.Atoi(productIdRow)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "failed get id product")
+		return
+	}
+
+	prod, err := h.service.GetProductById(productId)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "failed get product")
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "successfully get product", prod)
+
+}
+
 // POST
 // CreateProduct memfasilitasi pembuatan produk baru di database dari input admin.
 func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {

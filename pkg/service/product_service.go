@@ -16,6 +16,7 @@ import (
 // ProductService mendefinisikan kontrak untuk layanan produk.
 type ProductService interface {
 	GetAllProducts(tx context.Context, page int, limit int) (entity.PaginatedProductResponse, error)
+	GetProductById(productId int) (*entity.Product, error)
 	CreateProduct(req entity.Product) error
 	DeleteProduct(id int) error
 	UpdateProduct(id int, req entity.Product) (*entity.Product, error)
@@ -67,6 +68,15 @@ func (s *productService) GetAllProducts(ctx context.Context, page int, limit int
 	}
 
 	return products, nil
+}
+
+func (s *productService) GetProductById(productId int) (*entity.Product, error) {
+	prod, err := s.repo.GetProductById(productId)
+	if err != nil {
+		return nil, err
+	}
+
+	return prod, nil
 }
 
 // CreateProduct menangani pembuatan data produk baru dan validasi awal.

@@ -82,6 +82,7 @@ func main() {
 
 	// product
 	mux.HandleFunc("GET /api/products", productHandler.GetAllProducts)
+	mux.HandleFunc("GET /api/products/{id}", productHandler.GetProductById)
 	mux.HandleFunc("POST /api/products", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.CreateProduct)))
 	mux.HandleFunc("DELETE /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.DeleteProduct)))
 	mux.HandleFunc("PUT /api/products/{id}", middleware.JWTMiddleware(middleware.RBACMiddleware(productHandler.UpdateProduct)))
