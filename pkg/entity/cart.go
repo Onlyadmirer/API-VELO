@@ -33,9 +33,11 @@ type CartItemResponse struct {
 }
 
 type ProductResponse struct {
-	ID    int     `json:"id"`
-	Name  string  `json:"name"`
-	Price float64 `json:"price"`
+	ID       int     `json:"id"`
+	Name     string  `json:"name"`
+	Price    float64 `json:"price"`
+	Image    string  `json:"image"`
+	Category string  `json:"category"`
 }
 
 type UpdateCartItemRequest struct {

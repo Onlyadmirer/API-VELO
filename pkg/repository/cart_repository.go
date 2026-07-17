@@ -99,7 +99,9 @@ func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) 
 			ci.quantity,
 			p.id,
 			p.name,
-			p.price
+			p.price,
+			p.image,
+			p.category
 		FROM cart_items ci
 		JOIN carts c
 			ON ci.cart_id = c.id
@@ -126,7 +128,10 @@ func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) 
 			&ci.Quantity,
 			&ci.Product.ID,
 			&ci.Product.Name,
-			&ci.Product.Price)
+			&ci.Product.Price,
+			&ci.Product.Image,
+			&ci.Product.Category,
+		)
 
 		if err != nil {
 			return nil, fmt.Errorf(
@@ -142,9 +147,11 @@ func (r *cartRepository) GetCart(userId int) ([]entity.CartItemResponse, error) 
 			CartID:   ci.CartID,
 			Quantity: ci.Quantity,
 			Product: entity.ProductResponse{
-				ID:    ci.Product.ID,
-				Name:  ci.Product.Name,
-				Price: ci.Product.Price,
+				ID:       ci.Product.ID,
+				Name:     ci.Product.Name,
+				Price:    ci.Product.Price,
+				Image:    ci.Product.Image,
+				Category: ci.Product.Category,
 			},
 			TotalAmount: totalPrice,
 		}
