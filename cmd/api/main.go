@@ -101,7 +101,7 @@ func main() {
 			"DELETE",
 			"OPTIONS",
 		},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Idempotency-Key"},
 		AllowCredentials: true,
 	}).Handler(mux)
 

@@ -113,6 +113,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	dataUser, err := h.service.GetUser(userId)
 	if err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	utils.ResponseSuccess(w, http.StatusOK, "Get user datas successfully", dataUser)

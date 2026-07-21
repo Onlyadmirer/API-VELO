@@ -26,6 +26,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			if err == http.ErrNoCookie {
 				w.WriteHeader(http.StatusUnauthorized)
 				w.Write([]byte(`{error:"Unauthorized token tidak di temukan"}`))
+				return
 			}
 
 			w.WriteHeader(http.StatusBadRequest)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -19,6 +20,10 @@ func ConnectDB() (*sql.DB, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
 
 	err = db.Ping()
 	if err != nil {
