@@ -93,6 +93,7 @@ func main() {
 	handler := cors.New(cors.Options{
 		AllowedOrigins: []string{
 			"http://localhost:3000",
+			"https://velo-delta-gules.vercel.app",
 		},
 		AllowedMethods: []string{
 			"GET",
