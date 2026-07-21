@@ -27,6 +27,10 @@ func (m *MidtransClient) GenerateSnapURL(orderID int, totalPrice float64) (strin
 			Duration: 15,
 			Unit:     "minute",
 		},
+
+		Callbacks: &snap.Callbacks{
+			Finish: "https://velo-delta-gules.vercel.app",
+		},
 	}
 
 	snapResp, errMidtrans := snap.CreateTransaction(resp)
