@@ -101,6 +101,7 @@ func main() {
 			"PUT",
 			"DELETE",
 			"OPTIONS",
+			"PATCH",
 		},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Idempotency-Key"},
 		AllowCredentials: true,
