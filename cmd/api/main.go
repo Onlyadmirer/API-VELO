@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/midtrans/midtrans-go"
@@ -53,6 +54,19 @@ func main() {
 	orderRepo := repository.NewOrderRepository(db)
 	orderService := service.NewOrderService(orderRepo, cartRepo, midtrans, redisClient)
 	orderHandler := handler.NewOrderHandler(orderService)
+
+	// scheduler untuk batalkan order expired setiap 5 menit
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+
+		// jalankan sekali saat startup
+		orderService.CancelExpiredOrders()
+
+		for range ticker.C {
+			orderService.CancelExpiredOrders()
+		}
+	}()
 
 	// product
 	productRepo := repository.NewProductRepository(db)

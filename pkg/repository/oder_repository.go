@@ -12,6 +12,7 @@ type OrderRepository interface {
 	GetOrder(userId int) ([]entity.OrderHistory, error)
 	RestoreStock(orderID int) error
 	GetOrderStatus(orderID int) (string, error)
+	GetExpiredUnpaidOrders(expiryMinutes int) ([]int, error)
 }
 
 type orderRepository struct {
@@ -56,9 +57,8 @@ func (r *orderRepository) CreateOrder(userId int, cartId int, cartItems []entity
 	}
 
 	// insert ke tabel orders
-	const OrderStatusUnpaid = "Unpaid"
 	query := `INSERT INTO orders (user_id, total_amount, status) VALUES ($1, $2, $3) RETURNING id`
-	err = tx.QueryRow(query, userId, totalPrice, OrderStatusUnpaid).Scan(&orderId)
+	err = tx.QueryRow(query, userId, totalPrice, entity.OrderStatusUnpaid).Scan(&orderId)
 	if err != nil {
 		return 0, 0, fmt.Errorf("gagal insert order: %w", err)
 	}
@@ -126,6 +126,27 @@ func (r *orderRepository) GetOrderStatus(orderID int) (string, error) {
 	}
 
 	return status, nil
+}
+
+// GetExpiredUnpaidOrders mengambil daftar order ID dengan status Unpaid yang sudah melebihi batas waktu.
+func (r *orderRepository) GetExpiredUnpaidOrders(expiryMinutes int) ([]int, error) {
+	query := `SELECT id FROM orders WHERE status = $1 AND created_at <= NOW() - INTERVAL '1 minute' * $2`
+
+	rows, err := r.db.Query(query, entity.OrderStatusUnpaid, expiryMinutes)
+	if err != nil {
+		return nil, fmt.Errorf("gagal query expired orders: %w", err)
+	}
+	defer rows.Close()
+
+	var ids []int
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
 }
 
 // restore stock produk jika pembayaran gagal, cancel, expire, atau terjadi error di midtrans

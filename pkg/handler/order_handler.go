@@ -86,7 +86,7 @@ func (h *OrderHandler) MidtransNotifications(w http.ResponseWriter, r *http.Requ
 	case "capture", "settlement":
 		paymentStatus = "Paid"
 	case "cancel", "expire":
-		paymentStatus = "Canceled"
+		paymentStatus = "cancel"
 	default:
 		paymentStatus = "Pending"
 	}

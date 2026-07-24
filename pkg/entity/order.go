@@ -2,13 +2,19 @@ package entity
 
 import "time"
 
-type Order struct {
-	ID          int     `json:"id"`
-	UserID      int     `json:"user_id"`
-	TotalAmount float64 `json:"total_amount"`
-	Status      string  `json:"status"`
+const (
+	OrderStatusUnpaid  = "Unpaid"
+	OrderStatusCancel  = "cancel"
+	OrderStatusPaid    = "Paid"
+	OrderStatusPending = "Pending"
+)
 
-	CreatedAt time.Time `json:"created_at"`
+type Order struct {
+	ID          int       `json:"id"`
+	UserID      int       `json:"user_id"`
+	TotalAmount float64   `json:"total_amount"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type OrderItem struct {

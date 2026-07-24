@@ -35,8 +35,12 @@ func (m *MockOrderRepo) CreateOrder(u int, c int, items []entity.CartItemRespons
 	args := m.Called(u, c, items)
 	return args.Int(0), args.Get(1).(float64), args.Error(2)
 }
+func (m *MockOrderRepo) GetExpiredUnpaidOrders(expiryMinutes int) ([]int, error) { return nil, nil }
 
-func (m *MockCartRepo) GetOrCreateCart(userId int) (int, error)                      { return 0, nil }
+func (m *MockCartRepo) GetOrCreateCart(userId int) (int, error) {
+	args := m.Called(userId)
+	return args.Int(0), args.Error(1)
+}
 func (m *MockCartRepo) UpsertCartItem(cartID int, productID int, quantity int) error { return nil }
 func (m *MockCartRepo) UpdateCartItemQuantity(cartId int, cartItemId int, quantity int) error {
 	return nil

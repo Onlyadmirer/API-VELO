@@ -17,6 +17,7 @@ type OrderService interface {
 	CreateOrder(userId int, ctx context.Context, idempotencyKey string) (int, string, error)
 	UpdateOrderStatus(orderID int, status string) error
 	GetOrder(userId int) ([]entity.OrderHistory, error)
+	CancelExpiredOrders()
 }
 
 type orderService struct {
@@ -119,6 +120,23 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 		}
 	}
 	return nil
+}
+
+// CancelExpiredOrders menemukan order Unpaid yang sudah expired dan membatalkannya.
+func (s *orderService) CancelExpiredOrders() {
+	const expiryMinutes = 15
+
+	orderIDs, err := s.orderRepo.GetExpiredUnpaidOrders(expiryMinutes)
+	if err != nil {
+		fmt.Println("gagal mengambil expired orders:", err)
+		return
+	}
+
+	for _, id := range orderIDs {
+		if err := s.UpdateOrderStatus(id, entity.OrderStatusCancel); err != nil {
+			fmt.Printf("gagal membatalkan expired order %d: %v\n", id, err)
+		}
+	}
 }
 
 // GetOrder meretrieve riwayat pesanan beserta status pembayarannya.
