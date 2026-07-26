@@ -11,6 +11,9 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*entity.User, error)
 	ActivateVerifyToken(token string) error
 	GetUserByID(userId int) (*entity.User, error)
+	GetUserByOAuth(provider string, oauthID string) (*entity.User, error)
+	CreateOAuthUser(user *entity.User) (*entity.User, error)
+	LinkOAuthToUser(userID int, provider string, oauthID string) error
 }
 
 type userRepository struct {
@@ -84,7 +87,7 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 }
 
 func (r *userRepository) GetUserByID(userId int) (*entity.User, error) {
-	query := `SELECT id, name, email, role, is_verified, created_at, updated_at FROM users WHERE id = $1`
+	query := `SELECT id, name, email, role, is_verified, oauth_id, oauth_provider, avatar_url, created_at, updated_at FROM users WHERE id = $1`
 
 	var u entity.User
 	err := r.db.QueryRow(query, userId).Scan(
@@ -93,6 +96,9 @@ func (r *userRepository) GetUserByID(userId int) (*entity.User, error) {
 		&u.Email,
 		&u.Role,
 		&u.IsVerified,
+		&u.OAuthID,
+		&u.OAuthProvider,
+		&u.AvatarURL,
 		&u.CreatedAt,
 		&u.UpdatedAt,
 	)
@@ -105,4 +111,72 @@ func (r *userRepository) GetUserByID(userId int) (*entity.User, error) {
 	}
 
 	return &u, nil
+}
+
+func (r *userRepository) GetUserByOAuth(provider string, oauthID string) (*entity.User, error) {
+	query := `SELECT id, name, email, role, is_verified, oauth_id, oauth_provider, avatar_url FROM users WHERE oauth_provider = $1 AND oauth_id = $2`
+
+	var u entity.User
+	err := r.db.QueryRow(query, provider, oauthID).Scan(
+		&u.ID,
+		&u.Name,
+		&u.Email,
+		&u.Role,
+		&u.IsVerified,
+		&u.OAuthID,
+		&u.OAuthProvider,
+		&u.AvatarURL,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (r *userRepository) CreateOAuthUser(user *entity.User) (*entity.User, error) {
+	query := `INSERT INTO users (name, email, oauth_id, oauth_provider, avatar_url, role, is_verified)
+	VALUES ($1, $2, $3, $4, $5, 'customer', true)
+	RETURNING id, name, email, role, is_verified, oauth_id, oauth_provider, avatar_url, created_at, updated_at`
+
+	var u entity.User
+	err := r.db.QueryRow(query, user.Name, user.Email, user.OAuthID, user.OAuthProvider, user.AvatarURL).Scan(
+		&u.ID,
+		&u.Name,
+		&u.Email,
+		&u.Role,
+		&u.IsVerified,
+		&u.OAuthID,
+		&u.OAuthProvider,
+		&u.AvatarURL,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (r *userRepository) LinkOAuthToUser(userID int, provider string, oauthID string) error {
+	query := `UPDATE users SET oauth_provider = $1, oauth_id = $2 WHERE id = $3`
+
+	result, err := r.db.Exec(query, provider, oauthID, userID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

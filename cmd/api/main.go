@@ -73,6 +73,9 @@ func main() {
 	productService := service.NewProductService(productRepo, redisClient)
 	productHandler := handler.NewProductHandler(productService)
 
+	oauthService := service.NewOAuthService(userRepo, redisClient)
+	oauthHandler := handler.NewOAuthHandler(oauthService)
+
 	mux := http.NewServeMux()
 
 	// user
@@ -81,6 +84,10 @@ func main() {
 	mux.HandleFunc("POST /api/users/login", userHandler.UserLogin)
 	mux.HandleFunc("GET /api/users/me", middleware.JWTMiddleware(userHandler.GetUser))
 	mux.HandleFunc("POST /api/users/logout", middleware.JWTMiddleware(userHandler.LogOut))
+
+	// oauth
+	mux.HandleFunc("GET /api/auth/google/login", oauthHandler.GoogleLogin)
+	mux.HandleFunc("GET /api/auth/google/callback", oauthHandler.GoogleCallback)
 
 	// cart
 	mux.HandleFunc("POST /api/cart", middleware.JWTMiddleware(cartHandler.AddToCart))
